@@ -61,7 +61,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                 {/* Price */}
                 <div className={styles.priceBlock}>
                     <div className={styles.price}>
-                        <span className={styles.priceAmount}>299 ₽</span>
+                        <span className={styles.priceAmount}>4$</span>
                         <span className={styles.pricePeriod}>/мес</span>
                     </div>
                     <div className={styles.priceHint}>Отмена в любой момент</div>
