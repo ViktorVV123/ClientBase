@@ -15,12 +15,15 @@ import { supabase } from '@/lib/supabase';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import { ProjectModal } from '@/components/modal/ProjectModal';
 import { InvoiceModal } from '@/components/modal/InvoiceModal';
+import { BrandingSettings } from '@/components/branding/BrandingSettings';
 import * as styles from './ClientDetail.module.scss';
 
 interface ClientDetailProps {
     client: Client;
     onEditClient?: () => void;
     onClientUpdated?: (client: Client) => void;
+    isPro?: boolean;
+    onUpgrade?: () => void;
 }
 
 type TabKey = 'projects' | 'invoices' | 'files' | 'portal';
@@ -38,18 +41,18 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                                                               client,
                                                               onEditClient,
                                                               onClientUpdated,
+                                                              isPro = false,
+                                                              onUpgrade,
                                                           }) => {
     const [tab, setTab] = useState<TabKey>('projects');
     const [showPortal, setShowPortal] = useState(false);
     const [showProjectModal, setShowProjectModal] = useState(false);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
-    // Локальный стейт для проектов, инвойсов и файлов
     const [projects, setProjects] = useState(client.projects);
     const [invoices, setInvoices] = useState(client.invoices);
     const [files, setFiles] = useState(client.files);
 
-    // Обновляем локальный стейт при смене клиента
     React.useEffect(() => {
         setProjects(client.projects);
         setInvoices(client.invoices);
@@ -204,7 +207,12 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 />
             )}
             {tab === 'portal' && (
-                <PortalTab client={client} onPreview={() => setShowPortal(true)} />
+                <PortalTab
+                    client={client}
+                    onPreview={() => setShowPortal(true)}
+                    isPro={isPro}
+                    onUpgrade={onUpgrade}
+                />
             )}
 
             {/* Modals */}
@@ -473,10 +481,12 @@ const FilesTab: React.FC<{
 
 // ─── Portal settings ────────────────────────────────────────────────────
 
-const PortalTab: React.FC<{ client: Client; onPreview: () => void }> = ({
-                                                                            client,
-                                                                            onPreview,
-                                                                        }) => {
+const PortalTab: React.FC<{
+    client: Client;
+    onPreview: () => void;
+    isPro?: boolean;
+    onUpgrade?: () => void;
+}> = ({ client, onPreview, isPro = false, onUpgrade }) => {
     const [portalToken, setPortalToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -515,7 +525,6 @@ const PortalTab: React.FC<{ client: Client; onPreview: () => void }> = ({
         }
     };
 
-    // Загружаем существующий токен при монтировании
     React.useEffect(() => {
         const loadToken = async () => {
             try {
@@ -533,6 +542,7 @@ const PortalTab: React.FC<{ client: Client; onPreview: () => void }> = ({
 
     return (
         <div>
+            {/* Ссылка для клиента */}
             <div className={styles.portalLinkCard}>
                 <div className={styles.portalLinkLabel}>Ссылка для клиента</div>
                 {portalUrl ? (
@@ -562,24 +572,10 @@ const PortalTab: React.FC<{ client: Client; onPreview: () => void }> = ({
                 )}
             </div>
 
-            <div className={styles.sectionTitle}>Настройки портала</div>
-            <div className={styles.portalSettingsGrid}>
-                <div className={styles.settingCard}>
-                    <div className={styles.settingLabel}>Цвет бренда</div>
-                    <div className={styles.colorRow}>
-                        <div
-                            className={styles.colorSwatch}
-                            style={{ background: client.color }}
-                        />
-                        <span className={styles.colorHex}>{client.color}</span>
-                    </div>
-                </div>
-                <div className={styles.settingCard}>
-                    <div className={styles.settingLabel}>Логотип</div>
-                    <div className={styles.settingEmpty}>Не загружен</div>
-                </div>
-            </div>
+            {/* Брендинг — заблюренный для Free, рабочий для Pro */}
+            <BrandingSettings isPro={isPro} onUpgrade={onUpgrade} />
 
+            {/* Предпросмотр */}
             <div className={styles.portalActions}>
                 <button className={styles.previewBtnPrimary} onClick={onPreview}>
                     👁️ Предпросмотр портала клиента

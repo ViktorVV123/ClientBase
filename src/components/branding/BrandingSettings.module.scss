@@ -27,6 +27,19 @@
   vertical-align: middle;
 }
 
+.proTag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .subtitle {
   font-size: 13px;
   color: var(--text-muted);
@@ -106,7 +119,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .card {
@@ -123,6 +136,8 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .hint {
@@ -248,7 +263,7 @@
   }
 }
 
-// ── Color picker ──
+// ── Solid color picker ──
 
 .colorRow {
   display: flex;
@@ -294,6 +309,50 @@
     border: 2px solid var(--border-primary);
     border-radius: 50%;
   }
+}
+
+// ── Gradient grid ──
+
+.gradientGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.gradientSwatch {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  overflow: hidden;
+  min-height: 44px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.gradientSwatchActive {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+.gradientLabel {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.3px;
 }
 
 // ── Preview ──
@@ -368,6 +427,10 @@
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .gradientGrid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .lockCard {

@@ -180,6 +180,8 @@ const AppContent: React.FC = () => {
                         <ClientDetail
                             client={selectedClient}
                             onEditClient={() => setModalMode('edit')}
+                            isPro={currentPlan === 'pro'}
+                            onUpgrade={() => setModalMode('upgrade')}
                         />
                     ) : view === 'portal' && selectedClient ? (
                         <PortalPreview
