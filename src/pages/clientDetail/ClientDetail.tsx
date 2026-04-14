@@ -217,7 +217,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
 
             {/* Modals */}
             {showPortal && (
-                <PortalPreview client={{ ...client, projects, invoices }} onClose={() => setShowPortal(false)} />
+                <PortalPreview client={{ ...client, projects, invoices }} onClose={() => setShowPortal(false)} isPro={isPro} />
             )}
             {showProjectModal && (
                 <ProjectModal

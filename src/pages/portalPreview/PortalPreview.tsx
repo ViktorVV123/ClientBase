@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Client,
     STATUS_MAP,
@@ -7,14 +7,42 @@ import {
     formatMoney,
     formatDate,
 } from '@/assets/data/data';
+import { fetchProfile } from '@/lib/api';
 import * as styles from './PortalPreview.module.scss';
 
 interface PortalPreviewProps {
     client: Client;
     onClose: () => void;
+    isPro?: boolean;
 }
 
-export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose }) => {
+export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, isPro = false }) => {
+    const [branding, setBranding] = useState<{
+        companyName: string | null;
+        brandColor: string | null;
+        logoUrl: string | null;
+    } | null>(null);
+
+    useEffect(() => {
+        if (isPro) {
+            fetchProfile().then((profile) => {
+                if (profile) {
+                    setBranding({
+                        companyName: profile.company_name || null,
+                        brandColor: profile.brand_color || null,
+                        logoUrl: profile.logo_url || null,
+                    });
+                }
+            }).catch(() => {});
+        }
+    }, [isPro]);
+
+    // Branding overrides
+    const headerColor = (isPro && branding?.brandColor) || client.color;
+    const headerTitle = (isPro && branding?.companyName) || client.company;
+    const logoUrl = isPro ? branding?.logoUrl : null;
+    const showPoweredBy = !isPro || !branding?.companyName;
+
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.wrapper} onClick={(e) => e.stopPropagation()}>
@@ -28,10 +56,13 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose })
                     {/* Header */}
                     <div
                         className={styles.portalHeader}
-                        style={{ background: client.color }}
+                        style={{ background: headerColor }}
                     >
+                        {logoUrl && (
+                            <img src={logoUrl} alt={headerTitle} className={styles.portalLogo} />
+                        )}
                         <div className={styles.portalSubtitle}>Клиентский портал</div>
-                        <div className={styles.portalTitle}>{client.company}</div>
+                        <div className={styles.portalTitle}>{headerTitle}</div>
                         <div className={styles.portalGreeting}>
                             Добро пожаловать, {client.name.split(' ')[0]}
                         </div>
@@ -39,38 +70,42 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose })
 
                     <div className={styles.portalContent}>
                         {/* Projects */}
-                        <div className={styles.sectionTitle}>Ваши проекты</div>
-                        {client.projects.map((p) => {
-                            const s = STATUS_MAP[p.status];
-                            return (
-                                <div key={p.id} className={styles.card}>
-                                    <div className={styles.cardRow}>
-                                        <div className={styles.cardName}>{p.name}</div>
-                                        <span
-                                            className={styles.badge}
-                                            style={{ color: s.color, background: s.bg }}
-                                        >
-                                            ● {s.label}
-                                        </span>
-                                    </div>
-                                    <div className={styles.progressWrap}>
-                                        <div className={styles.progressTrack}>
-                                            <div
-                                                className={styles.progressFill}
-                                                style={{
-                                                    width: p.progress + '%',
-                                                    background: client.color,
-                                                }}
-                                            />
+                        {client.projects.length > 0 && (
+                            <>
+                                <div className={styles.sectionTitle}>Ваши проекты</div>
+                                {client.projects.map((p) => {
+                                    const s = STATUS_MAP[p.status];
+                                    return (
+                                        <div key={p.id} className={styles.card}>
+                                            <div className={styles.cardRow}>
+                                                <div className={styles.cardName}>{p.name}</div>
+                                                <span
+                                                    className={styles.badge}
+                                                    style={{ color: s.color, background: s.bg }}
+                                                >
+                                                    ● {s.label}
+                                                </span>
+                                            </div>
+                                            <div className={styles.progressWrap}>
+                                                <div className={styles.progressTrack}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{
+                                                            width: p.progress + '%',
+                                                            background: headerColor,
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className={styles.progressMeta}>
+                                                    Прогресс: {p.progress}%
+                                                    {p.deadline && ` · Дедлайн: ${formatDate(p.deadline)}`}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className={styles.progressMeta}>
-                                            Прогресс: {p.progress}% · Дедлайн:{' '}
-                                            {formatDate(p.deadline)}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                    );
+                                })}
+                            </>
+                        )}
 
                         {/* Invoices */}
                         {client.invoices.length > 0 && (
@@ -125,7 +160,7 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose })
                                         </div>
                                         <button
                                             className={styles.dlBtn}
-                                            style={{ background: client.color }}
+                                            style={{ background: headerColor }}
                                         >
                                             Скачать
                                         </button>
@@ -134,7 +169,9 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose })
                             </>
                         )}
 
-                        <div className={styles.poweredBy}>Powered by ClientBase</div>
+                        <div className={styles.poweredBy}>
+                            {showPoweredBy ? 'Powered by ClientBase' : headerTitle}
+                        </div>
                     </div>
                 </div>
             </div>
