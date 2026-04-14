@@ -4,19 +4,20 @@
     "noImplicitAny": true,
     "module": "ESNext",
     "target": "es5",
-    "jsx": "react-jsx", //теперь не нужно писать import react
+    "jsx": "react-jsx",
     "allowJs": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "baseUrl": ".", //для абсолютных путей
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"] //для абсолютных путей
+      "@/*": ["./src/*"]
     }
   },
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS"
     }
-  }
+  },
+  "exclude": ["supabase", "node_modules", "dist"]
 }
