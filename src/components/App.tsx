@@ -30,13 +30,13 @@ const AppContent: React.FC = () => {
     const [modalMode, setModalMode] = useState<ModalMode>('closed');
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         loadClients();
         loadSubscription();
     }, []);
 
-    // Проверяем URL на возврат из Stripe (success)
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('checkout') === 'success') {
@@ -106,13 +106,11 @@ const AppContent: React.FC = () => {
     ) => {
         try {
             await updateClientApi(clientId, data);
-            // Обновляем локальный стейт
             setClients((prev) =>
                 prev.map((c) =>
                     c.id === clientId ? { ...c, ...data } : c
                 )
             );
-            // Обновляем выбранного клиента
             if (selectedClient?.id === clientId) {
                 setSelectedClient((prev) => (prev ? { ...prev, ...data } : prev));
             }
@@ -140,6 +138,8 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const currentPlan = subscription?.plan || 'free';
+
     return (
         <div className={styles.app}>
             <Sidebar
@@ -149,6 +149,9 @@ const AppContent: React.FC = () => {
                 onDashboard={handleDashboard}
                 onAddClient={handleOpenAddClient}
                 onPortalPreview={handlePortalPreview}
+                plan={currentPlan}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
             />
 
             <main className={styles.main}>
@@ -157,6 +160,9 @@ const AppContent: React.FC = () => {
                     onBreadcrumbClick={handleDashboard}
                     onSignOut={signOut}
                     userEmail={user?.email}
+                    plan={currentPlan}
+                    onUpgrade={() => setModalMode('upgrade')}
+                    onMenuToggle={() => setSidebarOpen(true)}
                 />
 
                 <div className={styles.content}>

@@ -11,6 +11,7 @@
   flex-direction: column;
   height: 100vh;
   overflow: auto;
+  min-width: 0;
 }
 
 .content {
@@ -64,4 +65,12 @@
   font-size: 18px;
   font-weight: 800;
   color: #fff;
+}
+
+// ── Mobile ──
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
 }

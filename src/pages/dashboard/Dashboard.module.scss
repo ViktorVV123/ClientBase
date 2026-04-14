@@ -125,3 +125,85 @@
 .warningText { color: var(--color-warning); font-weight: 600; }
 .dimText     { color: var(--text-dim); }
 .mutedText   { color: var(--text-muted); font-size: 13px; }
+
+// ── Mobile ──
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  // Таблицу превращаем в карточки
+  .tableWrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .table {
+    display: block;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    tbody tr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+
+      &:hover {
+        background: var(--bg-hover);
+      }
+    }
+
+    td {
+      padding: 0;
+      border: none;
+      font-size: 13px;
+    }
+
+    // Клиент — полная ширина
+    td:nth-child(1) {
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    // Скрываем последнюю колонку на мобиле
+    td:nth-child(5) {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .statValue {
+    font-size: 20px;
+  }
+}

@@ -21,6 +21,7 @@
 
 .headerInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .headerName {
@@ -32,6 +33,9 @@
 .headerMeta {
   font-size: 14px;
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editBtn {
@@ -43,6 +47,7 @@
   background: transparent;
   color: var(--text-secondary);
   transition: all 0.15s;
+  white-space: nowrap;
 
   &:hover {
     background: var(--bg-hover);
@@ -59,6 +64,7 @@
   background: transparent;
   color: var(--text-secondary);
   transition: all 0.15s;
+  white-space: nowrap;
 
   &:hover {
     background: var(--bg-hover);
@@ -73,6 +79,12 @@
   gap: 0;
   border-bottom: 1px solid var(--border-primary);
   margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .tab {
@@ -84,6 +96,8 @@
   border: none;
   border-bottom: 2px solid transparent;
   transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     color: var(--text-primary);
@@ -113,6 +127,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  gap: 12px;
 }
 
 .sectionTitle {
@@ -136,6 +151,8 @@
   color: #fff;
   cursor: pointer;
   transition: opacity 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     opacity: 0.9;
@@ -249,7 +266,8 @@
   background: var(--bg-input);
   border-radius: 3px;
   overflow: hidden;
-  width: 120px;
+  flex: 1;
+  max-width: 120px;
 }
 
 .progressFill {
@@ -349,15 +367,20 @@
 
 .fileIcon {
   font-size: 24px;
+  flex-shrink: 0;
 }
 
 .fileInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .fileName {
   font-weight: 600;
   font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fileMeta {
@@ -374,6 +397,7 @@
   background: transparent;
   color: var(--text-secondary);
   transition: all 0.15s;
+  white-space: nowrap;
 
   &:hover {
     background: var(--bg-hover);
@@ -385,6 +409,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .fileDeleteBtn {
@@ -493,6 +518,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .copyBtn {
@@ -505,6 +531,7 @@
   color: #fff;
   transition: opacity 0.15s;
   flex-shrink: 0;
+  white-space: nowrap;
 
   &:hover {
     opacity: 0.9;
@@ -642,5 +669,129 @@
 
   &:hover {
     opacity: 0.9;
+  }
+}
+
+// ─── Mobile ──────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .headerName {
+    font-size: 18px;
+  }
+
+  .headerMeta {
+    font-size: 12px;
+  }
+
+  .editBtn,
+  .previewBtn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  // Tabs scroll horizontally
+  .tabs {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0 16px;
+  }
+
+  .tab {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  // Kanban stacks vertically
+  .kanban {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .kanbanCol {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  // Invoice stats stack
+  .invoiceStats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .invoiceStat {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  // Invoice table → cards
+  .table {
+    display: block;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    tbody tr {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+    }
+
+    td {
+      padding: 0;
+      border: none;
+      font-size: 13px;
+    }
+
+    td:nth-child(4) {
+      display: none;
+    }
+  }
+
+  .tableWrapper {
+    background: transparent;
+    border: none;
+  }
+
+  // Files
+  .fileRow {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .downloadBtn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  // Portal
+  .portalLinkRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portalSettingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portalLinkCard {
+    padding: 16px;
   }
 }

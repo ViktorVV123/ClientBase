@@ -1,4 +1,5 @@
 import React from 'react';
+import { Plan } from '@/lib/subscription';
 import * as styles from './TopBar.module.scss';
 
 interface TopBarProps {
@@ -6,6 +7,9 @@ interface TopBarProps {
     onBreadcrumbClick: () => void;
     onSignOut?: () => void;
     userEmail?: string;
+    plan?: Plan;
+    onUpgrade?: () => void;
+    onMenuToggle?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -13,6 +17,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                                                   onBreadcrumbClick,
                                                   onSignOut,
                                                   userEmail,
+                                                  plan = 'free',
+                                                  onUpgrade,
+                                                  onMenuToggle,
                                               }) => {
     const initials = userEmail
         ? userEmail.slice(0, 2).toUpperCase()
@@ -20,19 +27,37 @@ export const TopBar: React.FC<TopBarProps> = ({
 
     return (
         <div className={styles.topBar}>
-            <div className={styles.breadcrumb}>
-                <span className={styles.breadcrumbLink} onClick={onBreadcrumbClick}>
-                    ClientBase
-                </span>
-                {clientName && (
-                    <>
-                        <span className={styles.breadcrumbSep}>/</span>
-                        <span className={styles.breadcrumbActive}>{clientName}</span>
-                    </>
+            <div className={styles.left}>
+                {/* Mobile burger */}
+                {onMenuToggle && (
+                    <button className={styles.burgerBtn} onClick={onMenuToggle}>
+                        <span className={styles.burgerLine} />
+                        <span className={styles.burgerLine} />
+                        <span className={styles.burgerLine} />
+                    </button>
                 )}
+
+                <div className={styles.breadcrumb}>
+                    <span className={styles.breadcrumbLink} onClick={onBreadcrumbClick}>
+                        ClientBase
+                    </span>
+                    {clientName && (
+                        <>
+                            <span className={styles.breadcrumbSep}>/</span>
+                            <span className={styles.breadcrumbActive}>{clientName}</span>
+                        </>
+                    )}
+                </div>
             </div>
+
             <div className={styles.right}>
-                <div className={styles.planBadge}>● Pro Plan</div>
+                {plan === 'pro' ? (
+                    <div className={styles.planBadgePro}>⭐ Pro</div>
+                ) : (
+                    <button className={styles.upgradeBtnSmall} onClick={onUpgrade}>
+                        Upgrade
+                    </button>
+                )}
                 <div className={styles.userAvatar} title={userEmail}>
                     {initials}
                 </div>
