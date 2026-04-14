@@ -7,10 +7,12 @@ import {
     updateClient as updateClientApi,
     deleteClient as deleteClientApi,
 } from '@/lib/api';
+import { fetchSubscription, canCreateClient, Subscription } from '@/lib/subscription';
 import { ErrorBoundary } from '@/components/errorBoundary/ErrorBoundary';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { TopBar } from '@/components/topBar/TopBar';
 import { AddClientModal } from '@/components/modal/AddClientModal';
+import { UpgradeModal } from '@/components/modal/UpgradeModal';
 import { AuthPage } from '@/pages/auth/AuthPage';
 import { Dashboard } from '@/pages/dashboard/Dashboard';
 import { ClientDetail } from '@/pages/clientDetail/ClientDetail';
@@ -18,7 +20,7 @@ import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import * as styles from './App.module.scss';
 
 type View = 'dashboard' | 'client' | 'portal';
-type ModalMode = 'closed' | 'add' | 'edit';
+type ModalMode = 'closed' | 'add' | 'edit' | 'upgrade';
 
 const AppContent: React.FC = () => {
     const { user, signOut } = useAuth();
@@ -27,9 +29,20 @@ const AppContent: React.FC = () => {
     const [view, setView] = useState<View>('dashboard');
     const [modalMode, setModalMode] = useState<ModalMode>('closed');
     const [loading, setLoading] = useState(true);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
 
     useEffect(() => {
         loadClients();
+        loadSubscription();
+    }, []);
+
+    // Проверяем URL на возврат из Stripe (success)
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('checkout') === 'success') {
+            window.history.replaceState({}, '', window.location.pathname);
+            setTimeout(() => loadSubscription(), 1500);
+        }
     }, []);
 
     const loadClients = async () => {
@@ -44,6 +57,15 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const loadSubscription = async () => {
+        try {
+            const sub = await fetchSubscription();
+            setSubscription(sub);
+        } catch (err) {
+            console.error('Failed to load subscription:', err);
+        }
+    };
+
     const handleSelectClient = (client: Client) => {
         setSelectedClient(client);
         setView('client');
@@ -52,6 +74,15 @@ const AppContent: React.FC = () => {
     const handleDashboard = () => {
         setSelectedClient(null);
         setView('dashboard');
+    };
+
+    const handleOpenAddClient = async () => {
+        const allowed = await canCreateClient();
+        if (allowed) {
+            setModalMode('add');
+        } else {
+            setModalMode('upgrade');
+        }
     };
 
     const handleAddClient = async (newClient: Client) => {
@@ -116,7 +147,7 @@ const AppContent: React.FC = () => {
                 selectedClientId={selectedClient?.id ?? null}
                 onSelectClient={handleSelectClient}
                 onDashboard={handleDashboard}
-                onAddClient={() => setModalMode('add')}
+                onAddClient={handleOpenAddClient}
                 onPortalPreview={handlePortalPreview}
             />
 
@@ -153,7 +184,7 @@ const AppContent: React.FC = () => {
                 </div>
             </main>
 
-            {modalMode !== 'closed' && (
+            {(modalMode === 'add' || modalMode === 'edit') && (
                 <AddClientModal
                     client={modalMode === 'edit' ? selectedClient : null}
                     onClose={() => setModalMode('closed')}
@@ -161,6 +192,10 @@ const AppContent: React.FC = () => {
                     onUpdate={handleUpdateClient}
                     onDelete={handleDeleteClient}
                 />
+            )}
+
+            {modalMode === 'upgrade' && (
+                <UpgradeModal onClose={() => setModalMode('closed')} />
             )}
         </div>
     );
