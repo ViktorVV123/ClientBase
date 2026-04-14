@@ -14,7 +14,6 @@ const getUserId = async (): Promise<string> => {
 export const fetchClients = async (): Promise<Client[]> => {
     const userId = await getUserId();
 
-    // Загружаем клиентов
     const { data: clients, error } = await supabase
         .from('clients')
         .select('*')
@@ -26,14 +25,12 @@ export const fetchClients = async (): Promise<Client[]> => {
 
     const clientIds = clients.map((c) => c.id);
 
-    // Загружаем связанные данные параллельно
     const [projectsRes, invoicesRes, filesRes] = await Promise.all([
         supabase.from('projects').select('*').in('client_id', clientIds),
         supabase.from('invoices').select('*').in('client_id', clientIds),
         supabase.from('files').select('*').in('client_id', clientIds),
     ]);
 
-    // Группируем по client_id
     const projectsByClient = groupBy(projectsRes.data || [], 'client_id');
     const invoicesByClient = groupBy(invoicesRes.data || [], 'client_id');
     const filesByClient = groupBy(filesRes.data || [], 'client_id');
@@ -199,7 +196,6 @@ function formatFileSize(bytes: number): string {
 export const uploadFile = async (clientId: number, file: File): Promise<ClientFile> => {
     const userId = await getUserId();
 
-    // Загружаем в Storage: userId/clientId/filename
     const storagePath = `${userId}/${clientId}/${Date.now()}_${file.name}`;
 
     const { error: uploadError } = await supabase.storage
@@ -208,7 +204,6 @@ export const uploadFile = async (clientId: number, file: File): Promise<ClientFi
 
     if (uploadError) throw uploadError;
 
-    // Сохраняем запись в таблицу files
     const { data: fileRecord, error: dbError } = await supabase
         .from('files')
         .insert({
@@ -229,26 +224,30 @@ export const uploadFile = async (clientId: number, file: File): Promise<ClientFi
 export const downloadFile = async (storagePath: string): Promise<string> => {
     const { data, error } = await supabase.storage
         .from('client-files')
-        .createSignedUrl(storagePath, 60); // URL на 60 секунд
+        .createSignedUrl(storagePath, 60);
 
     if (error) throw error;
     return data.signedUrl;
 };
 
 export const deleteFile = async (fileId: number, storagePath: string): Promise<void> => {
-    // Удаляем из Storage
     const { error: storageError } = await supabase.storage
         .from('client-files')
         .remove([storagePath]);
 
     if (storageError) throw storageError;
 
-    // Удаляем запись из БД
     const { error: dbError } = await supabase.from('files').delete().eq('id', fileId);
     if (dbError) throw dbError;
 };
 
 // ─── Profile ─────────────────────────────────────────────────────────────
+
+export interface BrandingData {
+    company_name: string;
+    brand_color: string;
+    logo_url: string | null;
+}
 
 export const fetchProfile = async () => {
     const userId = await getUserId();
@@ -266,10 +265,63 @@ export const updateProfile = async (data: {
     full_name?: string;
     company_name?: string;
     brand_color?: string;
+    logo_url?: string | null;
 }): Promise<void> => {
     const userId = await getUserId();
     const { error } = await supabase.from('profiles').update(data).eq('id', userId);
     if (error) throw error;
+};
+
+export const uploadLogo = async (file: File): Promise<string> => {
+    const userId = await getUserId();
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+    const storagePath = `${userId}/logo_${Date.now()}.${ext}`;
+
+    // Удаляем старый лого если есть
+    const { data: oldFiles } = await supabase.storage
+        .from('brand-logos')
+        .list(userId);
+
+    if (oldFiles && oldFiles.length > 0) {
+        await supabase.storage
+            .from('brand-logos')
+            .remove(oldFiles.map((f) => `${userId}/${f.name}`));
+    }
+
+    // Загружаем новый
+    const { error: uploadError } = await supabase.storage
+        .from('brand-logos')
+        .upload(storagePath, file, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    // Получаем публичный URL
+    const { data } = supabase.storage
+        .from('brand-logos')
+        .getPublicUrl(storagePath);
+
+    const logoUrl = data.publicUrl;
+
+    // Сохраняем в профиль
+    await updateProfile({ logo_url: logoUrl });
+
+    return logoUrl;
+};
+
+export const deleteLogo = async (): Promise<void> => {
+    const userId = await getUserId();
+
+    const { data: files } = await supabase.storage
+        .from('brand-logos')
+        .list(userId);
+
+    if (files && files.length > 0) {
+        await supabase.storage
+            .from('brand-logos')
+            .remove(files.map((f) => `${userId}/${f.name}`));
+    }
+
+    await updateProfile({ logo_url: null });
 };
 
 // ─── Portal Tokens ───────────────────────────────────────────────────────
@@ -277,7 +329,6 @@ export const updateProfile = async (data: {
 export const getOrCreatePortalToken = async (clientId: number): Promise<string> => {
     const userId = await getUserId();
 
-    // Проверяем, есть ли уже токен
     const { data: existing } = await supabase
         .from('portal_tokens')
         .select('token')
@@ -287,7 +338,6 @@ export const getOrCreatePortalToken = async (clientId: number): Promise<string> 
 
     if (existing) return existing.token;
 
-    // Создаём новый
     const { data: created, error } = await supabase
         .from('portal_tokens')
         .insert({ client_id: clientId, user_id: userId })
@@ -314,10 +364,10 @@ export const regeneratePortalToken = async (clientId: number): Promise<string> =
 
 // Публичный запрос — без авторизации, по токену
 export const fetchPortalData = async (token: string) => {
-    // Получаем client_id по токену
+    // Получаем client_id и user_id по токену
     const { data: portalToken, error: tokenError } = await supabase
         .from('portal_tokens')
-        .select('client_id')
+        .select('client_id, user_id')
         .eq('token', token)
         .eq('is_active', true)
         .single();
@@ -325,24 +375,44 @@ export const fetchPortalData = async (token: string) => {
     if (tokenError || !portalToken) return null;
 
     const clientId = portalToken.client_id;
+    const userId = portalToken.user_id;
 
-    // Загружаем все данные параллельно
-    const [clientRes, projectsRes, invoicesRes, filesRes] = await Promise.all([
+    // Загружаем все данные + branding из profiles
+    const [clientRes, projectsRes, invoicesRes, filesRes, profileRes] = await Promise.all([
         supabase.from('clients').select('*').eq('id', clientId).single(),
         supabase.from('projects').select('*').eq('client_id', clientId).order('created_at'),
         supabase.from('invoices').select('*').eq('client_id', clientId).order('created_at'),
         supabase.from('files').select('*').eq('client_id', clientId).order('created_at'),
+        supabase.from('profiles').select('company_name, brand_color, logo_url').eq('id', userId).single(),
     ]);
 
     if (clientRes.error || !clientRes.data) return null;
 
     const c = clientRes.data;
+    const profile = profileRes.data;
+
+    // Проверяем подписку для branding
+    const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('plan')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single();
+
+    const isPro = sub?.plan === 'pro';
+
     return {
         client: {
             name: c.name,
             company: c.company || '',
             color: c.color || '#6366f1',
         },
+        // Branding доступен только для Pro
+        branding: isPro && profile ? {
+            companyName: profile.company_name || null,
+            brandColor: profile.brand_color || null,
+            logoUrl: profile.logo_url || null,
+        } : null,
         projects: (projectsRes.data || []).map(mapProject),
         invoices: (invoicesRes.data || []).map(mapInvoice),
         files: (filesRes.data || []).map(mapFile),

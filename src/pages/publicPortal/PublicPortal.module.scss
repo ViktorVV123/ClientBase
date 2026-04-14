@@ -22,6 +22,15 @@
   color: #fff;
 }
 
+.headerLogo {
+  width: auto;
+  height: 40px;
+  max-width: 180px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
 .headerSub {
   font-size: 13px;
   opacity: 0.8;
@@ -181,6 +190,7 @@
 
 .fileInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .dlBtn {
@@ -269,4 +279,45 @@
   font-size: 12px;
   margin-top: 40px;
   padding-bottom: 8px;
+}
+
+// ─── Mobile ──────────────────────────────────────────────────────────────
+
+@media (max-width: 640px) {
+  .page {
+    padding: 0;
+  }
+
+  .portal {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .header {
+    padding: 28px 20px;
+  }
+
+  .headerTitle {
+    font-size: 22px;
+  }
+
+  .content {
+    padding: 24px 20px;
+  }
+
+  .card,
+  .invoiceCard,
+  .fileCard {
+    padding: 16px;
+  }
+
+  .invoiceCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .invoiceRight {
+    text-align: left;
+  }
 }

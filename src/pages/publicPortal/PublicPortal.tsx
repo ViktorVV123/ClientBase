@@ -13,8 +13,15 @@ import {
 import { fetchPortalData, downloadFile } from '@/lib/api';
 import * as styles from './PublicPortal.module.scss';
 
+interface Branding {
+    companyName: string | null;
+    brandColor: string | null;
+    logoUrl: string | null;
+}
+
 interface PortalData {
     client: { name: string; company: string; color: string };
+    branding: Branding | null;
     projects: Project[];
     invoices: Invoice[];
     files: ClientFile[];
@@ -81,14 +88,27 @@ export const PublicPortal: React.FC = () => {
         );
     }
 
-    const { client, projects, invoices, files } = data;
+    const { client, branding, projects, invoices, files } = data;
+
+    // Branding overrides: если Pro и есть кастомные настройки — используем их
+    const headerColor = branding?.brandColor || client.color;
+    const headerTitle = branding?.companyName || client.company;
+    const logoUrl = branding?.logoUrl || null;
+    const showPoweredBy = !branding; // Free юзеры видят "Powered by ClientBase"
 
     return (
         <div className={styles.page}>
             <div className={styles.portal}>
-                <div className={styles.header} style={{ background: client.color }}>
+                <div className={styles.header} style={{ background: headerColor }}>
+                    {logoUrl && (
+                        <img
+                            src={logoUrl}
+                            alt={headerTitle}
+                            className={styles.headerLogo}
+                        />
+                    )}
                     <div className={styles.headerSub}>Клиентский портал</div>
-                    <div className={styles.headerTitle}>{client.company}</div>
+                    <div className={styles.headerTitle}>{headerTitle}</div>
                     <div className={styles.headerGreeting}>
                         Добро пожаловать, {client.name.split(' ')[0]}
                     </div>
@@ -117,7 +137,7 @@ export const PublicPortal: React.FC = () => {
                                                     className={styles.progressFill}
                                                     style={{
                                                         width: p.progress + '%',
-                                                        background: client.color,
+                                                        background: headerColor,
                                                     }}
                                                 />
                                             </div>
@@ -178,7 +198,7 @@ export const PublicPortal: React.FC = () => {
                                     </div>
                                     <button
                                         className={styles.dlBtn}
-                                        style={{ background: client.color }}
+                                        style={{ background: headerColor }}
                                         onClick={() => handleDownload(f)}
                                     >
                                         Скачать
@@ -194,7 +214,9 @@ export const PublicPortal: React.FC = () => {
                         </div>
                     )}
 
-                    <div className={styles.poweredBy}>Powered by ClientBase</div>
+                    <div className={styles.poweredBy}>
+                        {showPoweredBy ? 'Powered by ClientBase' : headerTitle}
+                    </div>
                 </div>
             </div>
         </div>
