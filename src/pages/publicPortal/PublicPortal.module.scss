@@ -1,0 +1,272 @@
+.page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: var(--font-family);
+}
+
+.portal {
+  width: 100%;
+  max-width: 800px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  align-self: flex-start;
+}
+
+.header {
+  padding: 36px 40px;
+  color: #fff;
+}
+
+.headerSub {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.headerTitle {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.headerGreeting {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+.content {
+  padding: 36px 40px;
+}
+
+// ─── Sections ────────────────────────────────────────────────────────────
+
+.sectionTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 14px;
+}
+
+.sectionTitleSpaced {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 14px;
+  margin-top: 32px;
+}
+
+// ─── Cards ───────────────────────────────────────────────────────────────
+
+.card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardName {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 15px;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 4px;
+}
+
+// ─── Progress ────────────────────────────────────────────────────────────
+
+.progressWrap {
+  margin-top: 14px;
+}
+
+.progressTrack {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progressMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+// ─── Invoices ────────────────────────────────────────────────────────────
+
+.invoiceCard {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+}
+
+.invoiceRight {
+  text-align: right;
+}
+
+.invoiceAmount {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+
+// ─── Files ───────────────────────────────────────────────────────────────
+
+.fileCard {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+}
+
+.fileIcon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.fileInfo {
+  flex: 1;
+}
+
+.dlBtn {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+// ─── States ──────────────────────────────────────────────────────────────
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #6b7280;
+  font-size: 14px;
+  font-family: var(--font-family);
+  background: #f3f4f6;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.notFound {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  background: #f3f4f6;
+  text-align: center;
+  padding: 20px;
+}
+
+.notFoundIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.notFoundTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.notFoundText {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.emptyPortal {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
+.poweredBy {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+  margin-top: 40px;
+  padding-bottom: 8px;
+}

@@ -1,0 +1,49 @@
+// _color.scss — ClientBase dark theme tokens
+
+:root {
+  // ── Background ──
+  --bg-primary: #0f0f12;
+  --bg-secondary: #18181b;
+  --bg-hover: #1e1e22;
+  --bg-input: #27272a;
+
+  // ── Borders ──
+  --border-primary: #27272a;
+  --border-subtle: #1e1e22;
+
+  // ── Text ──
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-dim: #52525b;
+
+  // ── Accent ──
+  --accent-primary: #6366f1;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-teal: #14b8a6;
+  --accent-cyan: #06b6d4;
+
+  // ── Semantic ──
+  --color-success: #22c55e;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fefce8;
+  --color-danger: #ef4444;
+  --color-danger-bg: #fef2f2;
+  --color-info: #6366f1;
+  --color-info-bg: #eef2ff;
+  --color-neutral: #94a3b8;
+  --color-neutral-bg: #f1f5f9;
+
+  // ── Sizing ──
+  --sidebar-width: 260px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  // ── Typography ──
+  --font-family: 'DM Sans', 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}

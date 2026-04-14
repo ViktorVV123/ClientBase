@@ -1,0 +1,211 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.wrapper {
+  width: 90%;
+  max-width: 860px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.closeRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.closeBtn {
+  background: var(--bg-input);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.portal {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: #1a1a2e;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.portalHeader {
+  padding: 32px 40px;
+  color: #fff;
+}
+
+.portalSubtitle {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.portalTitle {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.portalGreeting {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.portalContent {
+  padding: 32px 40px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+.sectionTitleSpaced {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+  margin-top: 24px;
+}
+
+.card {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardName {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 4px;
+}
+
+.progressWrap {
+  margin-top: 12px;
+}
+
+.progressTrack {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+
+.progressMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+// ─── Invoices ────────────────────────────────────────────────────────────
+
+.invoiceCard {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoiceRight {
+  text-align: right;
+}
+
+.invoiceAmount {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 16px;
+}
+
+// ─── Files ───────────────────────────────────────────────────────────────
+
+.fileCard {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fileIcon {
+  font-size: 28px;
+}
+
+.fileInfo {
+  flex: 1;
+}
+
+.dlBtn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.poweredBy {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+  margin-top: 32px;
+  padding-bottom: 16px;
+}

@@ -1,0 +1,646 @@
+// ─── Header ──────────────────────────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  flex: 1;
+}
+
+.headerName {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.headerMeta {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.editBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+.previewBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.tabActive {
+  font-weight: 600;
+  color: #fff;
+  border-bottom-color: var(--accent-primary);
+}
+
+.tabCount {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+// ─── Section Header ─────────────────────────────────────────────────────
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.emptyHint {
+  font-weight: 400;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.addBtn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// ─── Invoice Stats ──────────────────────────────────────────────────────
+
+.invoiceStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.invoiceStat {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.invoiceStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.invoiceStatValue {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.invoiceStatValueGreen {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.invoiceStatValueYellow {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-warning);
+}
+
+// ─── Kanban ──────────────────────────────────────────────────────────────
+
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kanbanCol {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-primary);
+  min-height: 200px;
+}
+
+.kanbanColTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kanbanDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.kanbanCard {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--text-dim);
+  }
+}
+
+.kanbanCardName {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  overflow: hidden;
+  width: 120px;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.kanbanDeadline {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.kanbanEmpty {
+  font-size: 13px;
+  color: var(--border-primary);
+  font-style: italic;
+  padding: 12px;
+}
+
+// ─── Table (invoices) ────────────────────────────────────────────────────
+
+.tableWrapper {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.bold   { font-weight: 600; }
+.amount { font-weight: 700; font-size: 15px; }
+.muted  { color: var(--text-muted); }
+.empty  { color: var(--text-dim); font-size: 14px; padding: 20px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  gap: 5px;
+}
+
+// ─── Files ───────────────────────────────────────────────────────────────
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.fileIcon {
+  font-size: 24px;
+}
+
+.fileInfo {
+  flex: 1;
+}
+
+.fileName {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.fileMeta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.downloadBtn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+.fileActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.fileDeleteBtn {
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+.fileDeleteConfirm {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--color-danger);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.fileCancelBtn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+}
+
+.emptyFiles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+// ─── Portal tab ──────────────────────────────────────────────────────────
+
+.portalLinkCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.portalLinkLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.portalLinkRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.portalLinkValue {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.portalActiveRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.portalActiveLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.deactivateBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.portalInactive {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portalInactiveText {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.activateBtn {
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.portalSettingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.settingCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+}
+
+.settingLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.colorRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.colorSwatch {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+}
+
+.colorHex {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.settingEmpty {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.portalActions {
+  margin-top: 24px;
+}
+
+.previewBtnPrimary {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
