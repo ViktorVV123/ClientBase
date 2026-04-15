@@ -188,7 +188,6 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                             </span>
                         </div>
 
-                        {/* Add note */}
                         <div className={styles.noteInput}>
                             <textarea
                                 className={styles.noteTextarea}
@@ -218,7 +217,6 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                             </div>
                         </div>
 
-                        {/* Notes list */}
                         <div className={styles.notesList}>
                             {notes.map((n) => (
                                 <div key={n.id} className={styles.noteItem}>

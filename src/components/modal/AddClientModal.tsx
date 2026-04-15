@@ -3,9 +3,9 @@ import { Client, AVATAR_COLORS } from '@/assets/data/data';
 import * as styles from './AddClientModal.module.scss';
 
 interface ClientModalProps {
-    client?: Client | null;        // если передан — режим редактирования
+    client?: Client | null;
     onClose: () => void;
-    onAdd: (client: Client) => void;
+    onAdd: (client: Client, enableNotifications: boolean) => void;
     onUpdate?: (clientId: number, data: { name: string; company: string; email: string; color: string; avatar: string }) => void;
     onDelete?: (clientId: number) => void;
 }
@@ -24,6 +24,7 @@ export const AddClientModal: React.FC<ClientModalProps> = ({
     const [email, setEmail] = useState(client?.email || '');
     const [color, setColor] = useState(client?.color || AVATAR_COLORS[0]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [enableNotifications, setEnableNotifications] = useState(true);
 
     const handleSubmit = () => {
         if (!name.trim()) return;
@@ -54,7 +55,7 @@ export const AddClientModal: React.FC<ClientModalProps> = ({
                 projects: [],
                 invoices: [],
                 files: [],
-            });
+            }, enableNotifications);
         }
         onClose();
     };
@@ -104,6 +105,18 @@ export const AddClientModal: React.FC<ClientModalProps> = ({
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyDown={handleKeyDown}
                 />
+                {email && (
+                    <label className={styles.notifyToggle}>
+                        <input
+                            type="checkbox"
+                            checked={enableNotifications}
+                            onChange={(e) => setEnableNotifications(e.target.checked)}
+                        />
+                        <span className={styles.notifyLabel}>
+                            📧 Отправлять уведомления на этот email
+                        </span>
+                    </label>
+                )}
 
                 <label className={styles.label}>Цвет</label>
                 <div className={styles.colorPicker}>

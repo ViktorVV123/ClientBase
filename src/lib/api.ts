@@ -533,6 +533,75 @@ function mapFile(f: any): ClientFile {
     };
 }
 
+// ─── Notifications ───────────────────────────────────────────────────────
+
+const SUPABASE_URL = 'https://cemtccfulgwewdptkukt.supabase.co';
+
+export interface NotificationSettings {
+    notify_project_created: boolean;
+    notify_project_status: boolean;
+    notify_invoice_created: boolean;
+}
+
+export const fetchNotificationSettings = async (clientId: number): Promise<NotificationSettings> => {
+    const { data, error } = await supabase
+        .from('clients')
+        .select('notify_project_created, notify_project_status, notify_invoice_created')
+        .eq('id', clientId)
+        .single();
+
+    if (error || !data) {
+        return { notify_project_created: true, notify_project_status: true, notify_invoice_created: true };
+    }
+    return data as NotificationSettings;
+};
+
+export const updateNotificationSettings = async (
+    clientId: number,
+    settings: Partial<NotificationSettings>
+): Promise<void> => {
+    const { error } = await supabase.from('clients').update(settings).eq('id', clientId);
+    if (error) throw error;
+};
+
+export const sendNotification = async (data: {
+    type: 'project_created' | 'project_status' | 'invoice_created';
+    clientId: number;
+    projectName?: string;
+    newStatus?: string;
+    invoiceNumber?: string;
+    amount?: string;
+    dueDate?: string;
+}): Promise<void> => {
+    try {
+        // Проверяем настройки уведомлений клиента
+        const settings = await fetchNotificationSettings(data.clientId);
+        const typeMap: Record<string, keyof NotificationSettings> = {
+            project_created: 'notify_project_created',
+            project_status: 'notify_project_status',
+            invoice_created: 'notify_invoice_created',
+        };
+        if (!settings[typeMap[data.type]]) return; // Уведомление выключено
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        await fetch(`${SUPABASE_URL}/functions/v1/send-notification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+                ...data,
+                origin: window.location.origin,
+            }),
+        });
+    } catch (err) {
+        console.error('Failed to send notification:', err);
+    }
+};
+
 function groupBy<T>(arr: T[], key: string): Record<string, T[]> {
     return arr.reduce((acc, item) => {
         const k = (item as any)[key];

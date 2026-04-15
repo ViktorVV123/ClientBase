@@ -6,6 +6,7 @@ import {
     createClient as createClientApi,
     updateClient as updateClientApi,
     deleteClient as deleteClientApi,
+    updateNotificationSettings as updateNotificationSettingsApi,
 } from '@/lib/api';
 import { fetchSubscription, canCreateClient, Subscription } from '@/lib/subscription';
 import { ErrorBoundary } from '@/components/errorBoundary/ErrorBoundary';
@@ -105,7 +106,7 @@ const AppContent: React.FC = () => {
         }
     };
 
-    const handleAddClient = async (newClient: Client) => {
+    const handleAddClient = async (newClient: Client, enableNotifications: boolean = true) => {
         try {
             const created = await createClientApi({
                 name: newClient.name,
@@ -115,6 +116,17 @@ const AppContent: React.FC = () => {
                 color: newClient.color,
             });
             setClients((prev) => [created, ...prev]);
+
+            // Если уведомления выключены — обновляем настройки
+            if (!enableNotifications) {
+                try {
+                    await updateNotificationSettingsApi(created.id, {
+                        notify_project_created: false,
+                        notify_project_status: false,
+                        notify_invoice_created: false,
+                    });
+                } catch {}
+            }
         } catch (err) {
             console.error('Failed to create client:', err);
         }

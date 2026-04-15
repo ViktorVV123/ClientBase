@@ -12,12 +12,13 @@ import {
     formatMoney,
     formatDate,
 } from '@/assets/data/data';
-import { createProject, updateProject, deleteProject, createInvoice, updateInvoice, deleteInvoice, uploadFile, downloadFile, deleteFile, getOrCreatePortalToken, deactivatePortalToken } from '@/lib/api';
+import { createProject, updateProject, deleteProject, createInvoice, updateInvoice, deleteInvoice, uploadFile, downloadFile, deleteFile, getOrCreatePortalToken, deactivatePortalToken, sendNotification } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import { ProjectModal } from '@/components/modal/ProjectModal';
 import { InvoiceModal } from '@/components/modal/InvoiceModal';
 import { BrandingSettings } from '@/components/branding/BrandingSettings';
+import { NotificationSettings } from '@/components/notifications/NotificationSettings';
 import * as styles from './ClientDetail.module.scss';
 
 interface ClientDetailProps {
@@ -116,6 +117,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             });
             setProjects((prev) => [...prev, created]);
             onDataChanged?.();
+            sendNotification({ type: 'project_created', clientId: client.id, projectName: data.name });
         } catch (err) {
             console.error('Failed to create project:', err);
         }
@@ -126,6 +128,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
         data: { name: string; status: string; progress: number; deadline: string }
     ) => {
         try {
+            const oldProject = projects.find((p) => p.id === projectId);
             await updateProject(projectId, data);
             setProjects((prev) =>
                 prev.map((p) =>
@@ -133,6 +136,9 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 )
             );
             onDataChanged?.();
+            if (oldProject && oldProject.status !== data.status) {
+                sendNotification({ type: 'project_status', clientId: client.id, projectName: data.name, newStatus: data.status });
+            }
         } catch (err) {
             console.error('Failed to update project:', err);
         }
@@ -206,6 +212,13 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             });
             setInvoices((prev) => [...prev, created]);
             onDataChanged?.();
+            sendNotification({
+                type: 'invoice_created',
+                clientId: client.id,
+                invoiceNumber: data.number,
+                amount: data.amount.toLocaleString('ru-RU') + ' ₽',
+                dueDate: data.dueDate,
+            });
         } catch (err) {
             console.error('Failed to create invoice:', err);
         }
@@ -307,6 +320,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {showProjectModal && (
                 <ProjectModal
                     clientId={client.id}
+                    clientEmail={client.email}
                     project={editingProject}
                     onClose={() => {
                         setShowProjectModal(false);
@@ -320,6 +334,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {showInvoiceModal && (
                 <InvoiceModal
                     clientId={client.id}
+                    clientEmail={client.email}
                     nextNumber={nextInvoiceNumber}
                     invoice={editingInvoice}
                     onClose={() => {
@@ -741,6 +756,9 @@ const PortalTab: React.FC<{
 
             {/* Брендинг — заблюренный для Free, рабочий для Pro */}
             <BrandingSettings isPro={isPro} onUpgrade={onUpgrade} />
+
+            {/* Настройки уведомлений */}
+            <NotificationSettings clientId={client.id} clientEmail={client.email} />
 
             {/* Предпросмотр */}
             <div className={styles.portalActions}>
