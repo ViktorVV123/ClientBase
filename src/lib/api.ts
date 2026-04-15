@@ -346,6 +346,15 @@ export const updateProfile = async (data: {
     company_name?: string;
     brand_color?: string;
     logo_url?: string | null;
+    business_name?: string;
+    inn?: string;
+    bank_name?: string;
+    bank_account?: string;
+    bank_bik?: string;
+    corr_account?: string;
+    currency?: string;
+    default_rate?: number | null;
+    locale?: string;
 }): Promise<void> => {
     const userId = await getUserId();
     const { error } = await supabase.from('profiles').update(data).eq('id', userId);

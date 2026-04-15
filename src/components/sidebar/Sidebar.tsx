@@ -9,6 +9,7 @@ interface SidebarProps {
     onSelectClient: (client: Client) => void;
     onDashboard: () => void;
     onCalendar?: () => void;
+    onSettings?: () => void;
     onAddClient: () => void;
     onPortalPreview: () => void;
     plan?: Plan;
@@ -23,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     onSelectClient,
                                                     onDashboard,
                                                     onCalendar,
+                                                    onSettings,
                                                     onAddClient,
                                                     onPortalPreview,
                                                     plan = 'free',
@@ -65,10 +67,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <span className={styles.navIcon}>📅</span>
                         Календарь
                     </button>
-                   {/* <button className={styles.navItem}>
+                    <button
+                        className={`${styles.navItem} ${activeView === 'settings' ? styles.navItemActive : ''}`}
+                        onClick={() => handleNav(onSettings || onDashboard)}
+                    >
                         <span className={styles.navIcon}>⚙️</span>
                         Настройки
-                    </button>*/}
+                    </button>
                 </nav>
 
                 <div className={styles.sectionLabel}>Клиенты</div>

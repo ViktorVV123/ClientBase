@@ -18,11 +18,12 @@ import { AuthPage } from '@/pages/auth/AuthPage';
 import { LandingPage } from '@/pages/landing/LandingPage';
 import { Dashboard } from '@/pages/dashboard/Dashboard';
 import { CalendarPage } from '@/pages/calendar/CalendarPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { ClientDetail } from '@/pages/clientDetail/ClientDetail';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import * as styles from './App.module.scss';
 
-type View = 'dashboard' | 'client' | 'portal' | 'calendar';
+type View = 'dashboard' | 'client' | 'portal' | 'calendar' | 'settings';
 type ModalMode = 'closed' | 'add' | 'edit' | 'upgrade';
 
 const AppContent: React.FC = () => {
@@ -136,6 +137,11 @@ const AppContent: React.FC = () => {
         setView('calendar');
     };
 
+    const handleSettings = () => {
+        setSelectedClient(null);
+        setView('settings');
+    };
+
     const handleOpenAddClient = async () => {
         const allowed = await canCreateClient();
         if (allowed) {
@@ -219,6 +225,7 @@ const AppContent: React.FC = () => {
                 onSelectClient={handleSelectClient}
                 onDashboard={handleDashboard}
                 onCalendar={handleCalendar}
+                onSettings={handleSettings}
                 onAddClient={handleOpenAddClient}
                 onPortalPreview={handlePortalPreview}
                 plan={currentPlan}
@@ -262,6 +269,12 @@ const AppContent: React.FC = () => {
                             onUpgrade={() => setModalMode('upgrade')}
                             onDataChanged={refreshClients}
                             timerState={timerState}
+                        />
+                    ) : view === 'settings' ? (
+                        <SettingsPage
+                            userEmail={user?.email}
+                            plan={currentPlan}
+                            onUpgrade={() => setModalMode('upgrade')}
                         />
                     ) : view === 'portal' && selectedClient ? (
                         <PortalPreview
