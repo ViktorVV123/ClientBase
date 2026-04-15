@@ -134,6 +134,73 @@ export const updateProject = async (
     if (error) throw error;
 };
 
+export const deleteProject = async (projectId: number): Promise<void> => {
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    if (error) throw error;
+};
+
+// ─── Project Notes ───────────────────────────────────────────────────────
+
+export interface ProjectNote {
+    id: number;
+    project_id: number;
+    text: string;
+    visible_to_client: boolean;
+    created_at: string;
+}
+
+export const fetchProjectNotes = async (projectId: number): Promise<ProjectNote[]> => {
+    const { data, error } = await supabase
+        .from('project_notes')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as ProjectNote[];
+};
+
+export const createProjectNote = async (data: {
+    projectId: number;
+    text: string;
+    visibleToClient?: boolean;
+}): Promise<ProjectNote> => {
+    const userId = await getUserId();
+
+    const { data: note, error } = await supabase
+        .from('project_notes')
+        .insert({
+            project_id: data.projectId,
+            user_id: userId,
+            text: data.text,
+            visible_to_client: data.visibleToClient ?? true,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return note as ProjectNote;
+};
+
+export const deleteProjectNote = async (noteId: number): Promise<void> => {
+    const { error } = await supabase.from('project_notes').delete().eq('id', noteId);
+    if (error) throw error;
+};
+
+// Для публичного портала — заметки по client_id
+export const fetchPortalNotes = async (projectIds: number[]): Promise<ProjectNote[]> => {
+    if (projectIds.length === 0) return [];
+    const { data, error } = await supabase
+        .from('project_notes')
+        .select('*')
+        .in('project_id', projectIds)
+        .eq('visible_to_client', true)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as ProjectNote[];
+};
+
 // ─── Invoices ────────────────────────────────────────────────────────────
 
 export const createInvoice = async (data: {
@@ -162,6 +229,19 @@ export const createInvoice = async (data: {
 
     if (error) throw error;
     return mapInvoice(invoice);
+};
+
+export const updateInvoice = async (
+    invoiceId: number,
+    data: Partial<{ number: string; amount: number; status: string; date: string; due_date: string }>
+): Promise<void> => {
+    const { error } = await supabase.from('invoices').update(data).eq('id', invoiceId);
+    if (error) throw error;
+};
+
+export const deleteInvoice = async (invoiceId: number): Promise<void> => {
+    const { error } = await supabase.from('invoices').delete().eq('id', invoiceId);
+    if (error) throw error;
 };
 
 // ─── Files (Storage) ─────────────────────────────────────────────────────

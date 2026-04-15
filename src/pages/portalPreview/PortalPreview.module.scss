@@ -218,3 +218,34 @@
   margin-top: 32px;
   padding-bottom: 16px;
 }
+
+// ─── Project notes ──────────────────────────────────────────────────────
+
+.projectNotes {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.projectNote {
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.projectNoteText {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.projectNoteDate {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}

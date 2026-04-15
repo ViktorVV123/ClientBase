@@ -50,10 +50,29 @@ const AppContent: React.FC = () => {
             setLoading(true);
             const data = await fetchClients();
             setClients(data);
+            // Обновляем selectedClient если он есть
+            if (selectedClient) {
+                const updated = data.find((c) => c.id === selectedClient.id);
+                if (updated) setSelectedClient(updated);
+            }
         } catch (err) {
             console.error('Failed to load clients:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Лёгкая перезагрузка без спиннера — для обновлений внутри ClientDetail
+    const refreshClients = async () => {
+        try {
+            const data = await fetchClients();
+            setClients(data);
+            if (selectedClient) {
+                const updated = data.find((c) => c.id === selectedClient.id);
+                if (updated) setSelectedClient(updated);
+            }
+        } catch (err) {
+            console.error('Failed to refresh clients:', err);
         }
     };
 
@@ -182,6 +201,7 @@ const AppContent: React.FC = () => {
                             onEditClient={() => setModalMode('edit')}
                             isPro={currentPlan === 'pro'}
                             onUpgrade={() => setModalMode('upgrade')}
+                            onDataChanged={refreshClients}
                         />
                     ) : view === 'portal' && selectedClient ? (
                         <PortalPreview

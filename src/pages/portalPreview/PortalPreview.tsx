@@ -7,7 +7,7 @@ import {
     formatMoney,
     formatDate,
 } from '@/assets/data/data';
-import { fetchProfile } from '@/lib/api';
+import { fetchProfile, fetchPortalNotes, ProjectNote } from '@/lib/api';
 import * as styles from './PortalPreview.module.scss';
 
 interface PortalPreviewProps {
@@ -22,6 +22,7 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
         brandColor: string | null;
         logoUrl: string | null;
     } | null>(null);
+    const [notes, setNotes] = useState<ProjectNote[]>([]);
 
     useEffect(() => {
         if (isPro) {
@@ -35,7 +36,12 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
                 }
             }).catch(() => {});
         }
-    }, [isPro]);
+        // Загружаем заметки для всех проектов
+        if (client.projects.length > 0) {
+            const projectIds = client.projects.map((p) => p.id);
+            fetchPortalNotes(projectIds).then(setNotes).catch(() => {});
+        }
+    }, [isPro, client.id]);
 
     // Branding overrides
     const headerColor = (isPro && branding?.brandColor) || client.color;
@@ -75,6 +81,7 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
                                 <div className={styles.sectionTitle}>Ваши проекты</div>
                                 {client.projects.map((p) => {
                                     const s = STATUS_MAP[p.status];
+                                    const projectNotes = notes.filter((n) => n.project_id === p.id);
                                     return (
                                         <div key={p.id} className={styles.card}>
                                             <div className={styles.cardRow}>
@@ -101,6 +108,18 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
                                                     {p.deadline && ` · Дедлайн: ${formatDate(p.deadline)}`}
                                                 </div>
                                             </div>
+                                            {projectNotes.length > 0 && (
+                                                <div className={styles.projectNotes}>
+                                                    {projectNotes.map((n) => (
+                                                        <div key={n.id} className={styles.projectNote}>
+                                                            <div className={styles.projectNoteText}>{n.text}</div>
+                                                            <div className={styles.projectNoteDate}>
+                                                                {new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}

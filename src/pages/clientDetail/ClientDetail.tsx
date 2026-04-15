@@ -3,14 +3,16 @@ import {
     Client,
     ClientFile,
     Project,
+    Invoice,
     ProjectStatus,
+    InvoiceStatus,
     STATUS_MAP,
     INVOICE_STATUS_MAP,
     FILE_ICONS,
     formatMoney,
     formatDate,
 } from '@/assets/data/data';
-import { createProject, createInvoice, uploadFile, downloadFile, deleteFile, getOrCreatePortalToken, deactivatePortalToken } from '@/lib/api';
+import { createProject, updateProject, deleteProject, createInvoice, updateInvoice, deleteInvoice, uploadFile, downloadFile, deleteFile, getOrCreatePortalToken, deactivatePortalToken } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import { ProjectModal } from '@/components/modal/ProjectModal';
@@ -24,6 +26,7 @@ interface ClientDetailProps {
     onClientUpdated?: (client: Client) => void;
     isPro?: boolean;
     onUpgrade?: () => void;
+    onDataChanged?: () => void;
 }
 
 type TabKey = 'projects' | 'invoices' | 'files' | 'portal';
@@ -43,11 +46,14 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                                                               onClientUpdated,
                                                               isPro = false,
                                                               onUpgrade,
+                                                              onDataChanged,
                                                           }) => {
     const [tab, setTab] = useState<TabKey>('projects');
     const [showPortal, setShowPortal] = useState(false);
     const [showProjectModal, setShowProjectModal] = useState(false);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
     const [projects, setProjects] = useState(client.projects);
     const [invoices, setInvoices] = useState(client.invoices);
@@ -69,6 +75,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 console.error('Failed to upload file:', err);
             }
         }
+        onDataChanged?.();
     };
 
     const handleDownloadFile = async (f: ClientFile) => {
@@ -86,6 +93,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
         try {
             await deleteFile(f.id, f.storagePath);
             setFiles((prev) => prev.filter((file) => file.id !== f.id));
+            onDataChanged?.();
         } catch (err) {
             console.error('Failed to delete file:', err);
         }
@@ -107,9 +115,76 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 deadline: data.deadline,
             });
             setProjects((prev) => [...prev, created]);
+            onDataChanged?.();
         } catch (err) {
             console.error('Failed to create project:', err);
         }
+    };
+
+    const handleUpdateProject = async (
+        projectId: number,
+        data: { name: string; status: string; progress: number; deadline: string }
+    ) => {
+        try {
+            await updateProject(projectId, data);
+            setProjects((prev) =>
+                prev.map((p) =>
+                    p.id === projectId ? { ...p, ...data, status: data.status as ProjectStatus } : p
+                )
+            );
+            onDataChanged?.();
+        } catch (err) {
+            console.error('Failed to update project:', err);
+        }
+    };
+
+    const handleDeleteProject = async (projectId: number) => {
+        try {
+            await deleteProject(projectId);
+            setProjects((prev) => prev.filter((p) => p.id !== projectId));
+            onDataChanged?.();
+        } catch (err) {
+            console.error('Failed to delete project:', err);
+        }
+    };
+
+    const handleEditProject = (project: Project) => {
+        setEditingProject(project);
+        setShowProjectModal(true);
+    };
+
+    const handleUpdateInvoice = async (
+        invoiceId: number,
+        data: { number: string; amount: number; status: string; date: string; due_date: string }
+    ) => {
+        try {
+            await updateInvoice(invoiceId, data);
+            setInvoices((prev) =>
+                prev.map((inv) =>
+                    inv.id === invoiceId
+                        ? { ...inv, number: data.number, amount: data.amount, status: data.status as InvoiceStatus, date: data.date, dueDate: data.due_date }
+                        : inv
+                )
+            );
+            onDataChanged?.();
+        } catch (err) {
+            console.error('Failed to update invoice:', err);
+        }
+    };
+
+    const handleDeleteInvoice = async (invoiceId: number) => {
+        try {
+            await deleteInvoice(invoiceId);
+            setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
+            onDataChanged?.();
+        } catch (err) {
+            console.error('Failed to delete invoice:', err);
+        }
+    };
+
+    const handleEditInvoice = (invoice: Invoice) => {
+        setEditingInvoice(invoice);
+        setShowInvoiceModal(true);
     };
 
     const handleCreateInvoice = async (data: {
@@ -130,6 +205,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 dueDate: data.dueDate,
             });
             setInvoices((prev) => [...prev, created]);
+            onDataChanged?.();
         } catch (err) {
             console.error('Failed to create invoice:', err);
         }
@@ -189,13 +265,21 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {tab === 'projects' && (
                 <ProjectsTab
                     projects={projects}
-                    onAdd={() => setShowProjectModal(true)}
+                    onAdd={() => {
+                        setEditingProject(null);
+                        setShowProjectModal(true);
+                    }}
+                    onEdit={handleEditProject}
                 />
             )}
             {tab === 'invoices' && (
                 <InvoicesTab
                     invoices={invoices}
-                    onAdd={() => setShowInvoiceModal(true)}
+                    onAdd={() => {
+                        setEditingInvoice(null);
+                        setShowInvoiceModal(true);
+                    }}
+                    onEdit={handleEditInvoice}
                 />
             )}
             {tab === 'files' && (
@@ -222,16 +306,28 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {showProjectModal && (
                 <ProjectModal
                     clientId={client.id}
-                    onClose={() => setShowProjectModal(false)}
+                    project={editingProject}
+                    onClose={() => {
+                        setShowProjectModal(false);
+                        setEditingProject(null);
+                    }}
                     onSubmit={handleCreateProject}
+                    onUpdate={handleUpdateProject}
+                    onDelete={handleDeleteProject}
                 />
             )}
             {showInvoiceModal && (
                 <InvoiceModal
                     clientId={client.id}
                     nextNumber={nextInvoiceNumber}
-                    onClose={() => setShowInvoiceModal(false)}
+                    invoice={editingInvoice}
+                    onClose={() => {
+                        setShowInvoiceModal(false);
+                        setEditingInvoice(null);
+                    }}
                     onSubmit={handleCreateInvoice}
+                    onUpdate={handleUpdateInvoice}
+                    onDelete={handleDeleteInvoice}
                 />
             )}
         </>
@@ -240,10 +336,11 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
 
 // ─── Projects (Kanban) ───────────────────────────────────────────────────
 
-const ProjectsTab: React.FC<{ projects: Project[]; onAdd: () => void }> = ({
-                                                                               projects,
-                                                                               onAdd,
-                                                                           }) => (
+const ProjectsTab: React.FC<{ projects: Project[]; onAdd: () => void; onEdit: (p: Project) => void }> = ({
+                                                                                                             projects,
+                                                                                                             onAdd,
+                                                                                                             onEdit,
+                                                                                                         }) => (
     <>
         <div className={styles.sectionHead}>
             <div className={styles.sectionTitle}>
@@ -270,7 +367,12 @@ const ProjectsTab: React.FC<{ projects: Project[]; onAdd: () => void }> = ({
                             {s.label} ({items.length})
                         </div>
                         {items.map((p) => (
-                            <div key={p.id} className={styles.kanbanCard}>
+                            <div
+                                key={p.id}
+                                className={styles.kanbanCard}
+                                onClick={() => onEdit(p)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <div className={styles.kanbanCardName}>{p.name}</div>
                                 <div className={styles.progressRow}>
                                     <div className={styles.progressBar}>
@@ -300,10 +402,11 @@ const ProjectsTab: React.FC<{ projects: Project[]; onAdd: () => void }> = ({
 
 // ─── Invoices ────────────────────────────────────────────────────────────
 
-const InvoicesTab: React.FC<{ invoices: Client['invoices']; onAdd: () => void }> = ({
-                                                                                        invoices,
-                                                                                        onAdd,
-                                                                                    }) => {
+const InvoicesTab: React.FC<{ invoices: Invoice[]; onAdd: () => void; onEdit: (inv: Invoice) => void }> = ({
+                                                                                                               invoices,
+                                                                                                               onAdd,
+                                                                                                               onEdit,
+                                                                                                           }) => {
     const total = invoices.reduce((s, i) => s + i.amount, 0);
     const paid = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
     const pending = invoices.filter((i) => i.status !== 'paid').reduce((s, i) => s + i.amount, 0);
@@ -352,7 +455,7 @@ const InvoicesTab: React.FC<{ invoices: Client['invoices']; onAdd: () => void }>
                         {invoices.map((inv) => {
                             const s = INVOICE_STATUS_MAP[inv.status];
                             return (
-                                <tr key={inv.id}>
+                                <tr key={inv.id} onClick={() => onEdit(inv)} style={{ cursor: 'pointer' }}>
                                     <td className={styles.bold}>{inv.number}</td>
                                     <td className={styles.amount}>{formatMoney(inv.amount)}</td>
                                     <td className={styles.muted}>{formatDate(inv.date)}</td>

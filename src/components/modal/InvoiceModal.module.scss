@@ -105,7 +105,11 @@
   display: flex;
   gap: 12px;
   margin-top: 20px;
-  justify-content: flex-end;
+  align-items: center;
+}
+
+.actionsSpacer {
+  flex: 1;
 }
 
 .cancelBtn {
@@ -135,5 +139,49 @@
 
   &:hover {
     opacity: 0.9;
+  }
+}
+
+// ── Delete ──
+
+.deleteBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+.deleteConfirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deleteText {
+  font-size: 13px;
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.deleteConfirmBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--color-danger);
+  color: #fff;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
   }
 }
