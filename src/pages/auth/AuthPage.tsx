@@ -72,48 +72,50 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     {isLogin ? t.loginTitle : t.registerTitle}
                 </div>
 
-                {!isLogin && (
-                    <>
-                        <label className={styles.label}>{t.fullName}</label>
-                        <input
-                            className={styles.input}
-                            type="text"
-                            placeholder="John Smith"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            autoFocus
-                        />
-                    </>
-                )}
+                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} autoComplete="on">
+                    {!isLogin && (
+                        <>
+                            <label className={styles.label}>{t.fullName}</label>
+                            <input
+                                className={styles.input}
+                                type="text"
+                                placeholder="John Smith"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                autoComplete="name"
+                                autoFocus
+                            />
+                        </>
+                    )}
 
-                <label className={styles.label}>{t.email}</label>
-                <input
-                    className={styles.input}
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    autoFocus={isLogin}
-                />
+                    <label className={styles.label}>{t.email}</label>
+                    <input
+                        className={styles.input}
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                        autoFocus={isLogin}
+                    />
 
-                <label className={styles.label}>{t.password}</label>
-                <input
-                    className={styles.input}
-                    type="password"
-                    placeholder="••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                />
+                    <label className={styles.label}>{t.password}</label>
+                    <input
+                        className={styles.input}
+                        type="password"
+                        placeholder="••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    />
 
-                {error && <div className={styles.error}>{error}</div>}
-                {success && <div className={styles.success}>{success}</div>}
+                    {error && <div className={styles.error}>{error}</div>}
+                    {success && <div className={styles.success}>{success}</div>}
 
-                <button className={styles.submitBtn} onClick={handleSubmit} disabled={loading}>
-                    {loading ? t.loading : isLogin ? t.signIn : t.signUp}
-                </button>
+                    <button type="submit" className={styles.submitBtn} disabled={loading}>
+                        {loading ? t.loading : isLogin ? t.signIn : t.signUp}
+                    </button>
+                </form>
 
                 <div className={styles.switchRow}>
                     {isLogin ? t.noAccount : t.hasAccount}
