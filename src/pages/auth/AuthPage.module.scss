@@ -16,6 +16,23 @@
     padding: 40px 32px;
 }
 
+.backBtn {
+    display: block;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+        color: var(--text-primary);
+    }
+}
+
 .logoRow {
     display: flex;
     align-items: center;

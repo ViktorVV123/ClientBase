@@ -14,6 +14,7 @@ import { TopBar } from '@/components/topBar/TopBar';
 import { AddClientModal } from '@/components/modal/AddClientModal';
 import { UpgradeModal } from '@/components/modal/UpgradeModal';
 import { AuthPage } from '@/pages/auth/AuthPage';
+import { LandingPage } from '@/pages/landing/LandingPage';
 import { Dashboard } from '@/pages/dashboard/Dashboard';
 import { ClientDetail } from '@/pages/clientDetail/ClientDetail';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
@@ -231,6 +232,7 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
     const { session, loading } = useAuth();
+    const [showAuth, setShowAuth] = useState(false);
 
     if (loading) {
         return (
@@ -242,7 +244,15 @@ export const App: React.FC = () => {
     }
 
     if (!session) {
-        return <AuthPage />;
+        if (showAuth) {
+            return <AuthPage onBack={() => setShowAuth(false)} />;
+        }
+        return (
+            <LandingPage
+                onGetStarted={() => setShowAuth(true)}
+                onLogin={() => setShowAuth(true)}
+            />
+        );
     }
 
     return (

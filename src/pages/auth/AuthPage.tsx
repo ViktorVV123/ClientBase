@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import * as styles from './AuthPage.module.scss';
 
-export const AuthPage: React.FC = () => {
+interface AuthPageProps {
+    onBack?: () => void;
+}
+
+export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     const { signIn, signUp } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -51,6 +55,12 @@ export const AuthPage: React.FC = () => {
     return (
         <div className={styles.page}>
             <div className={styles.card}>
+                {onBack && (
+                    <button className={styles.backBtn} onClick={onBack}>
+                        ← Назад
+                    </button>
+                )}
+
                 <div className={styles.logoRow}>
                     <div className={styles.logoMark}>CB</div>
                     <span className={styles.logoText}>ClientBase</span>
@@ -109,8 +119,8 @@ export const AuthPage: React.FC = () => {
                     {loading
                         ? 'Загрузка...'
                         : isLogin
-                        ? 'Войти'
-                        : 'Зарегистрироваться'}
+                            ? 'Войти'
+                            : 'Зарегистрироваться'}
                 </button>
 
                 <div className={styles.switchRow}>
