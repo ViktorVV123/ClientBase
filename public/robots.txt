@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+
+Sitemap: https://srmclientbase.com/sitemap.xml
+
+Host: srmclientbase.com
