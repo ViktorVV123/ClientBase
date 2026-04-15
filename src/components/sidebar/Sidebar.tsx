@@ -8,11 +8,13 @@ interface SidebarProps {
     selectedClientId: number | null;
     onSelectClient: (client: Client) => void;
     onDashboard: () => void;
+    onCalendar?: () => void;
     onAddClient: () => void;
     onPortalPreview: () => void;
     plan?: Plan;
     isOpen?: boolean;
     onClose?: () => void;
+    activeView?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -20,11 +22,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     selectedClientId,
                                                     onSelectClient,
                                                     onDashboard,
+                                                    onCalendar,
                                                     onAddClient,
                                                     onPortalPreview,
                                                     plan = 'free',
                                                     isOpen = false,
                                                     onClose,
+                                                    activeView,
                                                 }) => {
     const handleNav = (cb: () => void) => {
         cb();
@@ -48,20 +52,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <nav className={styles.nav}>
                     <button
-                        className={`${styles.navItem} ${!selectedClientId ? styles.navItemActive : ''}`}
+                        className={`${styles.navItem} ${activeView === 'dashboard' && !selectedClientId ? styles.navItemActive : ''}`}
                         onClick={() => handleNav(onDashboard)}
                     >
                         <span className={styles.navIcon}>📊</span>
                         Дашборд
                     </button>
-                    <button className={styles.navItem}>
+                    <button
+                        className={`${styles.navItem} ${activeView === 'calendar' ? styles.navItemActive : ''}`}
+                        onClick={() => handleNav(onCalendar || onDashboard)}
+                    >
                         <span className={styles.navIcon}>📅</span>
                         Календарь
                     </button>
-                    <button className={styles.navItem}>
+                  {/*  <button className={styles.navItem}>
                         <span className={styles.navIcon}>⚙️</span>
                         Настройки
-                    </button>
+                    </button>*/}
                 </nav>
 
                 <div className={styles.sectionLabel}>Клиенты</div>

@@ -17,11 +17,12 @@ import { UpgradeModal } from '@/components/modal/UpgradeModal';
 import { AuthPage } from '@/pages/auth/AuthPage';
 import { LandingPage } from '@/pages/landing/LandingPage';
 import { Dashboard } from '@/pages/dashboard/Dashboard';
+import { CalendarPage } from '@/pages/calendar/CalendarPage';
 import { ClientDetail } from '@/pages/clientDetail/ClientDetail';
 import { PortalPreview } from '@/pages/portalPreview/PortalPreview';
 import * as styles from './App.module.scss';
 
-type View = 'dashboard' | 'client' | 'portal';
+type View = 'dashboard' | 'client' | 'portal' | 'calendar';
 type ModalMode = 'closed' | 'add' | 'edit' | 'upgrade';
 
 const AppContent: React.FC = () => {
@@ -95,6 +96,11 @@ const AppContent: React.FC = () => {
     const handleDashboard = () => {
         setSelectedClient(null);
         setView('dashboard');
+    };
+
+    const handleCalendar = () => {
+        setSelectedClient(null);
+        setView('calendar');
     };
 
     const handleOpenAddClient = async () => {
@@ -179,11 +185,13 @@ const AppContent: React.FC = () => {
                 selectedClientId={selectedClient?.id ?? null}
                 onSelectClient={handleSelectClient}
                 onDashboard={handleDashboard}
+                onCalendar={handleCalendar}
                 onAddClient={handleOpenAddClient}
                 onPortalPreview={handlePortalPreview}
                 plan={currentPlan}
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                activeView={view}
             />
 
             <main className={styles.main}>
@@ -205,6 +213,11 @@ const AppContent: React.FC = () => {
                         </div>
                     ) : view === 'dashboard' ? (
                         <Dashboard
+                            clients={clients}
+                            onSelectClient={handleSelectClient}
+                        />
+                    ) : view === 'calendar' ? (
+                        <CalendarPage
                             clients={clients}
                             onSelectClient={handleSelectClient}
                         />
@@ -232,6 +245,10 @@ const AppContent: React.FC = () => {
                     onAdd={handleAddClient}
                     onUpdate={handleUpdateClient}
                     onDelete={handleDeleteClient}
+                    isPro={currentPlan === 'pro'}
+                    onUpgrade={() => {
+                        setModalMode('upgrade');
+                    }}
                 />
             )}
 

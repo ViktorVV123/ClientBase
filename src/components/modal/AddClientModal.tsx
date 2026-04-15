@@ -2,12 +2,25 @@ import React, { useState } from 'react';
 import { Client, AVATAR_COLORS } from '@/assets/data/data';
 import * as styles from './AddClientModal.module.scss';
 
+const PRO_GRADIENTS = [
+    { id: 'sunset',   value: 'linear-gradient(135deg, #f093fb, #f5576c)', label: 'Закат' },
+    { id: 'ocean',    value: 'linear-gradient(135deg, #4facfe, #00f2fe)', label: 'Океан' },
+    { id: 'aurora',   value: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', label: 'Аврора' },
+    { id: 'emerald',  value: 'linear-gradient(135deg, #11998e, #38ef7d)', label: 'Изумруд' },
+    { id: 'fire',     value: 'linear-gradient(135deg, #f12711, #f5af19)', label: 'Огонь' },
+    { id: 'midnight', value: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', label: 'Полночь' },
+    { id: 'candy',    value: 'linear-gradient(135deg, #fc5c7d, #6a82fb)', label: 'Конфета' },
+    { id: 'neon',     value: 'linear-gradient(135deg, #b721ff, #21d4fd)', label: 'Неон' },
+];
+
 interface ClientModalProps {
     client?: Client | null;
     onClose: () => void;
     onAdd: (client: Client, enableNotifications: boolean) => void;
     onUpdate?: (clientId: number, data: { name: string; company: string; email: string; color: string; avatar: string }) => void;
     onDelete?: (clientId: number) => void;
+    isPro?: boolean;
+    onUpgrade?: () => void;
 }
 
 export const AddClientModal: React.FC<ClientModalProps> = ({
@@ -16,6 +29,8 @@ export const AddClientModal: React.FC<ClientModalProps> = ({
                                                                onAdd,
                                                                onUpdate,
                                                                onDelete,
+                                                               isPro = false,
+                                                               onUpgrade,
                                                            }) => {
     const isEdit = !!client;
 
@@ -129,6 +144,39 @@ export const AddClientModal: React.FC<ClientModalProps> = ({
                             type="button"
                         />
                     ))}
+                </div>
+
+                {/* Pro gradients */}
+                <div className={styles.gradientSection}>
+                    <label className={styles.label}>
+                        Градиенты
+                        {!isPro && <span className={styles.proBadge}>PRO</span>}
+                    </label>
+                    <div className={isPro ? styles.gradientGrid : styles.gradientGridLocked}>
+                        {PRO_GRADIENTS.map((g) => (
+                            <button
+                                key={g.id}
+                                className={`${styles.gradientSwatch} ${color === g.value ? styles.gradientSwatchActive : ''}`}
+                                style={{ background: g.value }}
+                                onClick={() => {
+                                    if (isPro) {
+                                        setColor(g.value);
+                                    } else {
+                                        onUpgrade?.();
+                                    }
+                                }}
+                                type="button"
+                                title={isPro ? g.label : 'Доступно на Pro'}
+                            >
+                                <span className={styles.gradientLabel}>{g.label}</span>
+                            </button>
+                        ))}
+                        {!isPro && (
+                            <div className={styles.gradientLock} onClick={onUpgrade}>
+                                🔒 Pro
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className={styles.actions}>
