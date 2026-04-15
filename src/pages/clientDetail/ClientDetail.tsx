@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, {useRef, useState} from 'react';
 import {
     Client,
     ClientFile,
@@ -19,7 +19,20 @@ import { ProjectModal } from '@/components/modal/ProjectModal';
 import { InvoiceModal } from '@/components/modal/InvoiceModal';
 import { BrandingSettings } from '@/components/branding/BrandingSettings';
 import { NotificationSettings } from '@/components/notifications/NotificationSettings';
+import { TimeTab } from '@/components/timeTracking/TimeTab';
 import * as styles from './ClientDetail.module.scss';
+
+interface TimerState {
+    timerRunning: boolean;
+    timerSeconds: number;
+    timerProjectId: number | null;
+    timerDesc: string;
+    onTimerStart: () => void;
+    onTimerStop: () => void;
+    onTimerReset: () => void;
+    onTimerProjectChange: (id: number | null) => void;
+    onTimerDescChange: (desc: string) => void;
+}
 
 interface ClientDetailProps {
     client: Client;
@@ -28,14 +41,16 @@ interface ClientDetailProps {
     isPro?: boolean;
     onUpgrade?: () => void;
     onDataChanged?: () => void;
+    timerState?: TimerState;
 }
 
-type TabKey = 'projects' | 'invoices' | 'files' | 'portal';
+type TabKey = 'projects' | 'invoices' | 'files' | 'time' | 'portal';
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
     { key: 'projects', label: 'Проекты', icon: '📋' },
     { key: 'invoices', label: 'Счета',   icon: '💳' },
     { key: 'files',    label: 'Файлы',   icon: '📁' },
+    { key: 'time',     label: 'Время',   icon: '⏱️' },
     { key: 'portal',   label: 'Портал',  icon: '🔗' },
 ];
 
@@ -48,6 +63,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                                                               isPro = false,
                                                               onUpgrade,
                                                               onDataChanged,
+                                                              timerState,
                                                           }) => {
     const [tab, setTab] = useState<TabKey>('projects');
     const [showPortal, setShowPortal] = useState(false);
@@ -60,11 +76,15 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
     const [invoices, setInvoices] = useState(client.invoices);
     const [files, setFiles] = useState(client.files);
 
+    // Set default timer project when client changes
     React.useEffect(() => {
         setProjects(client.projects);
         setInvoices(client.invoices);
         setFiles(client.files);
         setTab('projects');
+        if (timerState && !timerState.timerRunning && client.projects[0]) {
+            timerState.onTimerProjectChange(client.projects[0].id);
+        }
     }, [client.id]);
 
     const handleUploadFiles = async (fileList: FileList) => {
@@ -270,6 +290,9 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                         {t.key === 'files' && files.length > 0 && (
                             <span className={styles.tabCount}>{files.length}</span>
                         )}
+                        {t.key === 'time' && timerState?.timerRunning && (
+                            <span className={styles.timerPulse} />
+                        )}
                     </button>
                 ))}
             </div>
@@ -302,6 +325,22 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                     onUpload={handleUploadFiles}
                     onDownload={handleDownloadFile}
                     onDelete={handleDeleteFile}
+                />
+            )}
+            {tab === 'time' && (
+                <TimeTab
+                    projects={projects}
+                    clientId={client.id}
+                    onDataChanged={onDataChanged}
+                    timerRunning={timerState?.timerRunning ?? false}
+                    timerSeconds={timerState?.timerSeconds ?? 0}
+                    timerProjectId={timerState?.timerProjectId ?? null}
+                    timerDesc={timerState?.timerDesc ?? ''}
+                    onTimerStart={timerState?.onTimerStart ?? (() => {})}
+                    onTimerStop={timerState?.onTimerStop ?? (() => {})}
+                    onTimerReset={timerState?.onTimerReset ?? (() => {})}
+                    onTimerProjectChange={timerState?.onTimerProjectChange ?? (() => {})}
+                    onTimerDescChange={timerState?.onTimerDescChange ?? (() => {})}
                 />
             )}
             {tab === 'portal' && (

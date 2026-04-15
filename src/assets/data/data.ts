@@ -30,6 +30,16 @@ export interface ClientFile {
     storagePath?: string;
 }
 
+export interface TimeEntry {
+    id: number;
+    projectId: number;
+    projectName: string;
+    description: string;
+    duration: number;       // в секундах
+    hourlyRate: number | null;
+    date: string;
+}
+
 export interface Client {
     id: number;
     name: string;
@@ -73,6 +83,14 @@ export const formatMoney = (n: number): string => n.toLocaleString('ru-RU') + ' 
 
 export const formatDate = (d: string): string =>
     new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+
+export const formatDuration = (seconds: number): string => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h === 0) return `${m} мин`;
+    if (m === 0) return `${h} ч`;
+    return `${h} ч ${m} мин`;
+};
 
 // ─── Mock Data ───────────────────────────────────────────────────────────
 

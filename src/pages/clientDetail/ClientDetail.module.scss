@@ -120,6 +120,21 @@
   border-radius: 10px;
 }
 
+.timerPulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  background: var(--color-success);
+  border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
 // ─── Section Header ─────────────────────────────────────────────────────
 
 .sectionHead {

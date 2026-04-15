@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Client } from '@/assets/data/data';
 import { useAuth } from '@/lib/AuthContext';
 import {
@@ -34,6 +34,39 @@ const AppContent: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // ─── Global timer state (survives all navigation) ─────────────
+    const [timerRunning, setTimerRunning] = useState(false);
+    const [timerSeconds, setTimerSeconds] = useState(0);
+    const [timerProjectId, setTimerProjectId] = useState<number | null>(null);
+    const [timerDesc, setTimerDesc] = useState('');
+    const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        if (timerRunning) {
+            timerIntervalRef.current = setInterval(() => {
+                setTimerSeconds((s) => s + 1);
+            }, 1000);
+        }
+        return () => {
+            if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        };
+    }, [timerRunning]);
+
+    const timerState = {
+        timerRunning,
+        timerSeconds,
+        timerProjectId,
+        timerDesc,
+        onTimerStart: () => setTimerRunning(true),
+        onTimerStop: () => {
+            setTimerRunning(false);
+            if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        },
+        onTimerReset: () => { setTimerSeconds(0); setTimerDesc(''); },
+        onTimerProjectChange: setTimerProjectId,
+        onTimerDescChange: setTimerDesc,
+    };
 
     useEffect(() => {
         loadClients();
@@ -228,6 +261,7 @@ const AppContent: React.FC = () => {
                             isPro={currentPlan === 'pro'}
                             onUpgrade={() => setModalMode('upgrade')}
                             onDataChanged={refreshClients}
+                            timerState={timerState}
                         />
                     ) : view === 'portal' && selectedClient ? (
                         <PortalPreview

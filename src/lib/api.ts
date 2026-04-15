@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Client, Project, Invoice, ClientFile } from '@/assets/data/data';
+import type { Client, Project, Invoice, ClientFile, TimeEntry } from '@/assets/data/data';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -601,6 +601,85 @@ export const sendNotification = async (data: {
         console.error('Failed to send notification:', err);
     }
 };
+
+// ─── Time Tracking ───────────────────────────────────────────────────────
+
+export const fetchTimeEntries = async (projectIds: number[]): Promise<TimeEntry[]> => {
+    if (projectIds.length === 0) return [];
+
+    const { data, error } = await supabase
+        .from('time_entries')
+        .select('*, projects!inner(name)')
+        .in('project_id', projectIds)
+        .order('date', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(mapTimeEntry);
+};
+
+export const createTimeEntry = async (data: {
+    projectId: number;
+    description: string;
+    duration: number;
+    hourlyRate: number | null;
+    date: string;
+}): Promise<TimeEntry> => {
+    const userId = await getUserId();
+
+    const { data: entry, error } = await supabase
+        .from('time_entries')
+        .insert({
+            user_id: userId,
+            project_id: data.projectId,
+            description: data.description,
+            duration: data.duration,
+            hourly_rate: data.hourlyRate,
+            date: data.date,
+        })
+        .select('*, projects!inner(name)')
+        .single();
+
+    if (error) throw error;
+    return mapTimeEntry(entry);
+};
+
+export const updateTimeEntry = async (
+    entryId: number,
+    data: Partial<{
+        projectId: number;
+        description: string;
+        duration: number;
+        hourlyRate: number | null;
+        date: string;
+    }>
+): Promise<void> => {
+    const update: Record<string, any> = {};
+    if (data.projectId !== undefined) update.project_id = data.projectId;
+    if (data.description !== undefined) update.description = data.description;
+    if (data.duration !== undefined) update.duration = data.duration;
+    if (data.hourlyRate !== undefined) update.hourly_rate = data.hourlyRate;
+    if (data.date !== undefined) update.date = data.date;
+
+    const { error } = await supabase.from('time_entries').update(update).eq('id', entryId);
+    if (error) throw error;
+};
+
+export const deleteTimeEntry = async (entryId: number): Promise<void> => {
+    const { error } = await supabase.from('time_entries').delete().eq('id', entryId);
+    if (error) throw error;
+};
+
+function mapTimeEntry(e: any): TimeEntry {
+    return {
+        id: e.id,
+        projectId: e.project_id,
+        projectName: e.projects?.name || '',
+        description: e.description || '',
+        duration: e.duration || 0,
+        hourlyRate: e.hourly_rate,
+        date: e.date || '',
+    };
+}
 
 function groupBy<T>(arr: T[], key: string): Record<string, T[]> {
     return arr.reduce((acc, item) => {

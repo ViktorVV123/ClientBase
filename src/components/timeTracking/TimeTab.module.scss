@@ -1,0 +1,406 @@
+/* ─── Time Tracking Tab ─────────────────────────────────────────────── */
+
+.timerSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.timerDisplay {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 120px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.timerDisplayRunning {
+  composes: timerDisplay;
+  color: var(--color-success);
+}
+
+.timerBtn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.timerStart {
+  composes: timerBtn;
+  background: var(--color-success);
+  color: #fff;
+
+  &:hover { opacity: 0.9; }
+}
+
+.timerStop {
+  composes: timerBtn;
+  background: var(--color-danger);
+  color: #fff;
+
+  &:hover { opacity: 0.9; }
+}
+
+.timerProject {
+  flex: 1;
+  min-width: 140px;
+}
+
+.timerDesc {
+  flex: 2;
+  min-width: 180px;
+}
+
+.timerProject select,
+.timerDesc input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+}
+
+/* ─── Manual Entry Toggle ──────────────────────────────────────────── */
+
+.manualToggle {
+  font-size: 13px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-bottom: 12px;
+
+  &:hover { color: var(--text-secondary); }
+}
+
+/* ─── Manual Entry Form ────────────────────────────────────────────── */
+
+.manualForm {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formGroupGrow {
+  composes: formGroup;
+  flex: 1;
+  min-width: 140px;
+}
+
+.formLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formInput {
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+}
+
+.formSelect {
+  composes: formInput;
+  cursor: pointer;
+}
+
+.timeInputs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.timeInput {
+  width: 50px;
+  padding: 8px 6px;
+  text-align: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+}
+
+.timeSep {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.saveBtn {
+  padding: 8px 20px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  align-self: flex-end;
+
+  &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+/* ─── Stats Bar ────────────────────────────────────────────────────── */
+
+.statsBar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  flex: 1;
+  min-width: 120px;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statValueAccent {
+  composes: statValue;
+  color: var(--accent-primary);
+}
+
+/* ─── Entries List ─────────────────────────────────────────────────── */
+
+.entriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entryRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+
+  &:hover { background: var(--bg-hover); }
+}
+
+.entryDate {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 65px;
+  font-family: var(--font-mono);
+}
+
+.entryProject {
+  font-size: 12px;
+  color: var(--accent-primary);
+  font-weight: 600;
+  min-width: 100px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entryDesc {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entryDescEmpty {
+  composes: entryDesc;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.entryDuration {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 70px;
+  text-align: right;
+}
+
+.entryAmount {
+  font-size: 13px;
+  color: var(--color-success);
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+}
+
+.entryDelete {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* ─── Day Group ────────────────────────────────────────────────────── */
+
+.dayGroup {
+  margin-bottom: 12px;
+}
+
+.dayHeader {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dayTotal {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* ─── Empty State ──────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+}
+
+.emptyIcon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ─── Mobile ───────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .timerSection {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .timerDisplay,
+  .timerDisplayRunning {
+    font-size: 32px;
+    text-align: center;
+  }
+
+  .timerProject,
+  .timerDesc {
+    min-width: unset;
+  }
+
+  .manualForm {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .statsBar {
+    gap: 8px;
+  }
+
+  .stat {
+    min-width: 80px;
+    padding: 10px 14px;
+  }
+
+  .entryRow {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .entryProject {
+    max-width: unset;
+    order: -1;
+    width: 100%;
+  }
+}
