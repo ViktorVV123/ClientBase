@@ -671,6 +671,17 @@
   color: #52525b;
 }
 
+.footerTg {
+  font-size: 13px;
+  color: #71717a;
+  text-decoration: none;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
 // ─── Animations ──────────────────────────────────────────────────────────
 
 @keyframes fadeUp {

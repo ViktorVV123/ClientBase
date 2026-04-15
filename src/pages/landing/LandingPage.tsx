@@ -282,6 +282,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin 
                         <div className={styles.logoMark}>CB</div>
                         <span>ClientBase</span>
                     </div>
+                    <a href="https://t.me/gga123321" target="_blank" rel="noopener noreferrer" className={styles.footerTg}>
+                        ✈️ Telegram
+                    </a>
                     <div className={styles.footerCopy}>{s.footer.copy}</div>
                 </div>
             </footer>

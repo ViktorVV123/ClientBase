@@ -116,7 +116,7 @@ export const BrandingSettings: React.FC<BrandingSettingsProps> = ({ isPro, onUpg
                                 клиенты увидят ваш бренд, а не ClientBase
                             </div>
                             <button className={styles.unlockBtn} onClick={onUpgrade}>
-                                ⭐ Разблокировать за 299 ₽/мес
+                                ⭐ Разблокировать за 4 $/мес
                             </button>
                         </div>
                     </div>

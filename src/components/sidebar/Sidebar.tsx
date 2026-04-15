@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <span className={styles.navIcon}>📅</span>
                         Календарь
                     </button>
-                  {/*  <button className={styles.navItem}>
+                   {/* <button className={styles.navItem}>
                         <span className={styles.navIcon}>⚙️</span>
                         Настройки
                     </button>*/}
@@ -100,6 +100,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             👁️ Портал клиента
                         </button>
                     )}
+
+                    <a
+                        href="https://t.me/gga123321"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.supportLink}
+                    >
+                        ✈️ Поддержка в Telegram
+                    </a>
                 </div>
             </aside>
         </>
