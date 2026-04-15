@@ -544,14 +544,14 @@ const translations = {
         download: 'Download',
         portalPowered: 'Powered by ClientBase',
     },
-} as const;
+};
 
-export type TranslationKey = keyof typeof translations.ru;
+type Translations = typeof translations.ru;
 
 interface I18nContextType {
     locale: Locale;
     setLocale: (l: Locale) => void;
-    t: typeof translations.ru;
+    t: Translations;
 }
 
 const I18nContext = createContext<I18nContextType>({
@@ -573,7 +573,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('cb_locale', l);
     }, []);
 
-    const t = translations[locale];
+    const t: Translations = translations[locale];
 
     return (
         <I18nContext.Provider value={{ locale, setLocale, t }}>
