@@ -203,7 +203,7 @@ const translations = {
         customBrandingDesc: 'Логотип и цвета в портале клиента',
         prioritySupport: 'Приоритетная поддержка',
         prioritySupportDesc: 'Ответ в течение 24 часов',
-        pricePerMonth: '299 ₽ / мес',
+        pricePerMonth: '4$ / мес',
         paymentError: 'Ошибка при создании оплаты',
         paymentTryLater: 'Не удалось создать сессию оплаты. Попробуйте позже.',
 
