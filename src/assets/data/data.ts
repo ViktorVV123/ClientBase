@@ -4,12 +4,23 @@ export type ProjectStatus = 'brief' | 'in_progress' | 'review' | 'done';
 export type InvoiceStatus = 'paid' | 'pending' | 'overdue';
 export type FileType = 'pdf' | 'design' | 'image' | 'archive' | 'doc';
 
+export type ProjectPriority = 'normal' | 'urgent';
+
+export interface ProjectTask {
+    id: number;
+    text: string;
+    done: boolean;
+    position: number;
+}
+
 export interface Project {
     id: number;
     name: string;
     status: ProjectStatus;
     progress: number;
     deadline: string;
+    description: string;
+    priority: ProjectPriority;
 }
 
 export interface Invoice {
@@ -103,8 +114,8 @@ export const CLIENTS_DATA: Client[] = [
         avatar: 'AP',
         color: '#6366f1',
         projects: [
-            { id: 1, name: 'Редизайн лендинга',  status: 'review',      progress: 75, deadline: '2026-04-28' },
-            { id: 2, name: 'Мобильная адаптация', status: 'in_progress', progress: 40, deadline: '2026-05-15' },
+            { id: 1, name: 'Редизайн лендинга',  status: 'review',      progress: 75, deadline: '2026-04-28', description: '', priority: 'normal' as ProjectPriority },
+            { id: 2, name: 'Мобильная адаптация', status: 'in_progress', progress: 40, deadline: '2026-05-15', description: '', priority: 'normal' as ProjectPriority },
         ],
         invoices: [
             { id: 1, number: 'INV-001', amount: 85000,  status: 'paid',    date: '2026-03-01', dueDate: '2026-03-15' },
@@ -124,8 +135,8 @@ export const CLIENTS_DATA: Client[] = [
         avatar: 'МК',
         color: '#ec4899',
         projects: [
-            { id: 3, name: 'Брендбук',       status: 'done',        progress: 100, deadline: '2026-03-30' },
-            { id: 4, name: 'Соцсети пакет',   status: 'in_progress', progress: 60,  deadline: '2026-05-01' },
+            { id: 3, name: 'Брендбук',       status: 'done',        progress: 100, deadline: '2026-03-30', description: '', priority: 'normal' as ProjectPriority },
+            { id: 4, name: 'Соцсети пакет',   status: 'in_progress', progress: 60, deadline: '2026-05-01', description: '', priority: 'normal' as ProjectPriority },
         ],
         invoices: [
             { id: 3, number: 'INV-003', amount: 120000, status: 'paid',    date: '2026-02-15', dueDate: '2026-03-01' },
@@ -144,7 +155,7 @@ export const CLIENTS_DATA: Client[] = [
         avatar: 'ДВ',
         color: '#14b8a6',
         projects: [
-            { id: 5, name: 'API интеграция', status: 'in_progress', progress: 30, deadline: '2026-05-20' },
+            { id: 5, name: 'API интеграция', status: 'in_progress', progress: 30, deadline: '2026-05-20', description: '', priority: 'normal' as ProjectPriority },
         ],
         invoices: [
             { id: 5, number: 'INV-005', amount: 200000, status: 'pending', date: '2026-04-10', dueDate: '2026-04-25' },
@@ -161,7 +172,7 @@ export const CLIENTS_DATA: Client[] = [
         avatar: 'ЕС',
         color: '#f59e0b',
         projects: [
-            { id: 6, name: 'Эко-маркетплейс', status: 'brief', progress: 5, deadline: '2026-06-01' },
+            { id: 6, name: 'Эко-маркетплейс', status: 'brief', progress: 5, deadline: '2026-06-01', description: '', priority: 'normal' as ProjectPriority },
         ],
         invoices: [],
         files: [

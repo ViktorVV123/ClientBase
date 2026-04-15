@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Client, Project, Invoice, ClientFile, TimeEntry } from '@/assets/data/data';
+import type { Client, Project, Invoice, ClientFile, TimeEntry, ProjectTask } from '@/assets/data/data';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -106,6 +106,8 @@ export const createProject = async (data: {
     status?: string;
     progress?: number;
     deadline?: string;
+    description?: string;
+    priority?: string;
 }): Promise<Project> => {
     const userId = await getUserId();
 
@@ -118,6 +120,8 @@ export const createProject = async (data: {
             status: data.status || 'brief',
             progress: data.progress || 0,
             deadline: data.deadline || null,
+            description: data.description || '',
+            priority: data.priority || 'normal',
         })
         .select()
         .single();
@@ -128,7 +132,7 @@ export const createProject = async (data: {
 
 export const updateProject = async (
     projectId: number,
-    data: Partial<{ name: string; status: string; progress: number; deadline: string }>
+    data: Partial<{ name: string; status: string; progress: number; deadline: string; description: string; priority: string }>
 ): Promise<void> => {
     const { error } = await supabase.from('projects').update(data).eq('id', projectId);
     if (error) throw error;
@@ -517,6 +521,8 @@ function mapProject(p: any): Project {
         status: p.status || 'brief',
         progress: p.progress || 0,
         deadline: p.deadline || '',
+        description: p.description || '',
+        priority: p.priority || 'normal',
     };
 }
 
@@ -609,6 +615,59 @@ export const sendNotification = async (data: {
     } catch (err) {
         console.error('Failed to send notification:', err);
     }
+};
+
+// ─── Project Tasks ──────────────────────────────────────────────────────
+
+export const fetchProjectTasks = async (projectId: number): Promise<ProjectTask[]> => {
+    const { data, error } = await supabase
+        .from('project_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('position', { ascending: true });
+
+    if (error) throw error;
+    return (data || []).map((t: any) => ({
+        id: t.id,
+        text: t.text,
+        done: t.done,
+        position: t.position,
+    }));
+};
+
+export const createProjectTask = async (data: {
+    projectId: number;
+    text: string;
+    position: number;
+}): Promise<ProjectTask> => {
+    const userId = await getUserId();
+
+    const { data: task, error } = await supabase
+        .from('project_tasks')
+        .insert({
+            user_id: userId,
+            project_id: data.projectId,
+            text: data.text,
+            position: data.position,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return { id: task.id, text: task.text, done: task.done, position: task.position };
+};
+
+export const updateProjectTask = async (
+    taskId: number,
+    data: Partial<{ text: string; done: boolean; position: number }>
+): Promise<void> => {
+    const { error } = await supabase.from('project_tasks').update(data).eq('id', taskId);
+    if (error) throw error;
+};
+
+export const deleteProjectTask = async (taskId: number): Promise<void> => {
+    const { error } = await supabase.from('project_tasks').delete().eq('id', taskId);
+    if (error) throw error;
 };
 
 // ─── Time Tracking ───────────────────────────────────────────────────────

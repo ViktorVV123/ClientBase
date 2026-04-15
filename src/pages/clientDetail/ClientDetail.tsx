@@ -6,6 +6,7 @@ import {
     Invoice,
     ProjectStatus,
     InvoiceStatus,
+    ProjectPriority,
     STATUS_MAP,
     INVOICE_STATUS_MAP,
     FILE_ICONS,
@@ -126,6 +127,8 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
         status: ProjectStatus;
         progress: number;
         deadline: string;
+        description: string;
+        priority: string;
     }) => {
         try {
             const created = await createProject({
@@ -134,6 +137,8 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 status: data.status,
                 progress: data.progress,
                 deadline: data.deadline,
+                description: data.description,
+                priority: data.priority,
             });
             setProjects((prev) => [...prev, created]);
             onDataChanged?.();
@@ -145,15 +150,24 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
 
     const handleUpdateProject = async (
         projectId: number,
-        data: { name: string; status: string; progress: number; deadline: string }
+        data: { name: string; status: string; progress: number; deadline: string; description?: string; priority?: string }
     ) => {
         try {
             const oldProject = projects.find((p) => p.id === projectId);
             await updateProject(projectId, data);
             setProjects((prev) =>
-                prev.map((p) =>
-                    p.id === projectId ? { ...p, ...data, status: data.status as ProjectStatus } : p
-                )
+                prev.map((p) => {
+                    if (p.id !== projectId) return p;
+                    return {
+                        ...p,
+                        name: data.name,
+                        status: data.status as ProjectStatus,
+                        progress: data.progress,
+                        deadline: data.deadline,
+                        description: data.description ?? p.description,
+                        priority: (data.priority ?? p.priority) as ProjectPriority,
+                    };
+                })
             );
             onDataChanged?.();
             if (oldProject && oldProject.status !== data.status) {
@@ -393,7 +407,7 @@ const ProjectsTab: React.FC<{
     projects: Project[];
     onAdd: () => void;
     onEdit: (p: Project) => void;
-    onStatusChange: (projectId: number, data: { name: string; status: string; progress: number; deadline: string }) => void;
+    onStatusChange: (projectId: number, data: { name: string; status: string; progress: number; deadline: string; description?: string; priority?: string }) => void;
 }> = ({ projects, onAdd, onEdit, onStatusChange }) => {
     const [draggedId, setDraggedId] = useState<number | null>(null);
     const [dragOverCol, setDragOverCol] = useState<ProjectStatus | null>(null);
@@ -423,17 +437,12 @@ const ProjectsTab: React.FC<{
         const project = projects.find((p) => p.id === projectId);
         if (!project || project.status === targetStatus) return;
 
-        // Автоматический прогресс при перетаскивании (вперёд и назад)
-        let newProgress = project.progress;
-        if (targetStatus === 'brief') newProgress = 5;
-        if (targetStatus === 'in_progress') newProgress = Math.max(20, Math.min(newProgress, 60));
-        if (targetStatus === 'review') newProgress = Math.max(70, Math.min(newProgress, 95));
-        if (targetStatus === 'done') newProgress = 100;
-
+        // Drag-and-drop only changes status, never touches progress
+        // Progress is managed by tasks (auto) or manually in modal
         onStatusChange(projectId, {
             name: project.name,
             status: targetStatus,
-            progress: newProgress,
+            progress: project.progress,
             deadline: project.deadline,
         });
     };
@@ -479,13 +488,18 @@ const ProjectsTab: React.FC<{
                             {items.map((p) => (
                                 <div
                                     key={p.id}
-                                    className={`${styles.kanbanCard} ${draggedId === p.id ? styles.kanbanCardDragging : ''}`}
+                                    className={`${styles.kanbanCard} ${draggedId === p.id ? styles.kanbanCardDragging : ''} ${p.priority === 'urgent' ? styles.kanbanCardUrgent : ''}`}
                                     onClick={() => onEdit(p)}
                                     draggable
                                     onDragStart={(e) => handleDragStart(e, p)}
                                     onDragEnd={handleDragEnd}
                                 >
-                                    <div className={styles.kanbanCardName}>{p.name}</div>
+                                    <div className={styles.kanbanCardTop}>
+                                        <div className={styles.kanbanCardName}>{p.name}</div>
+                                        {p.priority === 'urgent' && (
+                                            <span className={styles.urgentBadge}>🔥</span>
+                                        )}
+                                    </div>
                                     <div className={styles.progressRow}>
                                         <div className={styles.progressBar}>
                                             <div

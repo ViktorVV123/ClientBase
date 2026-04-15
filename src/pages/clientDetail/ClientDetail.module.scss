@@ -280,6 +280,23 @@
   transform: scale(0.95);
 }
 
+.kanbanCardUrgent {
+  border-color: rgba(239, 68, 68, 0.3);
+  border-left: 3px solid var(--color-danger);
+}
+
+.kanbanCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.urgentBadge {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 .kanbanDropHint {
   padding: 14px;
   border: 2px dashed var(--accent-primary);

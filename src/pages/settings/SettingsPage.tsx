@@ -281,7 +281,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('rates')}>
                     <span className={styles.sectionIcon}>💰</span>
-                    <span className={styles.sectionTitle}>Валюта и ставка</span>
+                    <span className={styles.sectionTitle}>Валюта и ставка (В разработке)</span>
                     <span className={openSections.rates ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.rates && (

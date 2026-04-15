@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Project, ProjectStatus } from '@/assets/data/data';
-import { fetchProjectNotes, createProjectNote, deleteProjectNote, ProjectNote } from '@/lib/api';
+import type { Project, ProjectStatus, ProjectPriority, ProjectTask } from '@/assets/data/data';
+import {
+    fetchProjectNotes, createProjectNote, deleteProjectNote, ProjectNote,
+    fetchProjectTasks, createProjectTask, updateProjectTask, deleteProjectTask,
+} from '@/lib/api';
 import * as styles from './ProjectModal.module.scss';
 
 interface ProjectModalProps {
@@ -13,12 +16,16 @@ interface ProjectModalProps {
         status: ProjectStatus;
         progress: number;
         deadline: string;
+        description: string;
+        priority: ProjectPriority;
     }) => void;
     onUpdate?: (projectId: number, data: {
         name: string;
         status: string;
         progress: number;
         deadline: string;
+        description: string;
+        priority: string;
     }) => void;
     onDelete?: (projectId: number) => void;
 }
@@ -44,6 +51,8 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     const [status, setStatus] = useState<ProjectStatus>(project?.status || 'brief');
     const [progress, setProgress] = useState(project?.progress || 0);
     const [deadline, setDeadline] = useState(project?.deadline || '');
+    const [description, setDescription] = useState(project?.description || '');
+    const [priority, setPriority] = useState<ProjectPriority>(project?.priority || 'normal');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Notes
@@ -52,12 +61,19 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     const [noteVisible, setNoteVisible] = useState(true);
     const [addingNote, setAddingNote] = useState(false);
 
+    // Tasks
+    const [tasks, setTasks] = useState<ProjectTask[]>([]);
+    const [newTaskText, setNewTaskText] = useState('');
+    const [addingTask, setAddingTask] = useState(false);
+
     useEffect(() => {
         if (isEdit && project) {
             loadNotes(project.id);
+            loadTasks(project.id);
         }
     }, [project?.id]);
 
+    // ─── Notes ────────────────────────────────────────────────────────
     const loadNotes = async (projectId: number) => {
         try {
             const data = await fetchProjectNotes(projectId);
@@ -94,12 +110,79 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         }
     };
 
+    // ─── Tasks ────────────────────────────────────────────────────────
+    const loadTasks = async (projectId: number) => {
+        try {
+            const data = await fetchProjectTasks(projectId);
+            setTasks(data);
+        } catch (err) {
+            console.error('Failed to load tasks:', err);
+        }
+    };
+
+    const handleAddTask = async () => {
+        if (!newTaskText.trim() || !project) return;
+        setAddingTask(true);
+        try {
+            const task = await createProjectTask({
+                projectId: project.id,
+                text: newTaskText.trim(),
+                position: tasks.length,
+            });
+            setTasks((prev) => [...prev, task]);
+            setNewTaskText('');
+            recalcProgress([...tasks, task]);
+        } catch (err) {
+            console.error('Failed to add task:', err);
+        } finally {
+            setAddingTask(false);
+        }
+    };
+
+    const handleToggleTask = async (task: ProjectTask) => {
+        const newDone = !task.done;
+        try {
+            await updateProjectTask(task.id, { done: newDone });
+            const updated = tasks.map((t) => t.id === task.id ? { ...t, done: newDone } : t);
+            setTasks(updated);
+            recalcProgress(updated);
+        } catch (err) {
+            console.error('Failed to toggle task:', err);
+        }
+    };
+
+    const handleDeleteTask = async (taskId: number) => {
+        try {
+            await deleteProjectTask(taskId);
+            const updated = tasks.filter((t) => t.id !== taskId);
+            setTasks(updated);
+            recalcProgress(updated);
+        } catch (err) {
+            console.error('Failed to delete task:', err);
+        }
+    };
+
+    const handleTaskKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddTask();
+        }
+    };
+
+    const recalcProgress = (taskList: ProjectTask[]) => {
+        if (taskList.length === 0) return;
+        const done = taskList.filter((t) => t.done).length;
+        const newProgress = Math.round((done / taskList.length) * 100);
+        setProgress(newProgress);
+    };
+
+    // ─── Submit ───────────────────────────────────────────────────────
     const handleSubmit = () => {
         if (!name.trim()) return;
         if (isEdit && onUpdate && project) {
-            onUpdate(project.id, { name, status, progress, deadline });
+            onUpdate(project.id, { name, status, progress, deadline, description, priority });
         } else {
-            onSubmit({ clientId, name, status, progress, deadline });
+            onSubmit({ clientId, name, status, progress, deadline, description, priority });
         }
         onClose();
     };
@@ -112,15 +195,11 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) handleSubmit();
+        if (e.key === 'Enter' && !e.shiftKey && e.target instanceof HTMLInputElement) handleSubmit();
     };
 
     const handleStatusChange = (newStatus: ProjectStatus) => {
         setStatus(newStatus);
-        if (newStatus === 'brief' && progress === 0) setProgress(5);
-        if (newStatus === 'in_progress' && progress < 20) setProgress(20);
-        if (newStatus === 'review' && progress < 70) setProgress(70);
-        if (newStatus === 'done') setProgress(100);
     };
 
     const formatNoteDate = (d: string) => {
@@ -129,66 +208,170 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             + ' ' + date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     };
 
+    const doneCount = tasks.filter((t) => t.done).length;
+
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <div className={styles.title}>
-                    {isEdit ? 'Редактировать проект' : 'Новый проект'}
-                </div>
+                <div className={styles.modalBody}>
+                    <div className={styles.title}>
+                        {isEdit ? 'Редактировать проект' : 'Новый проект'}
+                    </div>
 
-                <label className={styles.label}>Название</label>
-                <input
-                    className={styles.input}
-                    placeholder="Редизайн лендинга"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    autoFocus
-                />
+                    <label className={styles.label}>Название</label>
+                    <input
+                        className={styles.input}
+                        placeholder="Редизайн лендинга"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        autoFocus
+                    />
 
-                <label className={styles.label}>Статус</label>
-                <div className={styles.statusGrid}>
-                    {STATUS_OPTIONS.map((opt) => (
-                        <button
-                            key={opt.value}
-                            type="button"
-                            className={`${styles.statusOption} ${status === opt.value ? styles.statusActive : ''}`}
-                            onClick={() => handleStatusChange(opt.value)}
-                        >
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
+                    <label className={styles.label}>Описание</label>
+                    <textarea
+                        className={styles.textarea}
+                        placeholder="ТЗ, ссылки, заметки по проекту..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                    />
 
-                <label className={styles.label}>Прогресс: {progress}%</label>
-                <input
-                    className={styles.range}
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={progress}
-                    onChange={(e) => setProgress(Number(e.target.value))}
-                />
+                    <div className={styles.rowFields}>
+                        <div className={styles.fieldHalf}>
+                            <label className={styles.label}>Статус</label>
+                            <div className={styles.statusGrid}>
+                                {STATUS_OPTIONS.map((opt) => (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        className={`${styles.statusOption} ${status === opt.value ? styles.statusActive : ''}`}
+                                        onClick={() => handleStatusChange(opt.value)}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className={styles.fieldHalf}>
+                            <label className={styles.label}>Приоритет</label>
+                            <div className={styles.priorityGrid}>
+                                <button
+                                    type="button"
+                                    className={`${styles.priorityOption} ${priority === 'normal' ? styles.priorityNormal : ''}`}
+                                    onClick={() => setPriority('normal')}
+                                >
+                                    Обычный
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`${styles.priorityOption} ${priority === 'urgent' ? styles.priorityUrgent : ''}`}
+                                    onClick={() => setPriority('urgent')}
+                                >
+                                    🔥 Срочный
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                <label className={styles.label}>Дедлайн</label>
-                <input
-                    className={styles.input}
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                />
+                    {tasks.length > 0 ? (
+                        <div className={styles.autoProgressBar}>
+                            <div className={styles.autoProgressLabel}>
+                                Прогресс: {doneCount}/{tasks.length} задач ({progress}%)
+                            </div>
+                            <div className={styles.autoProgressTrack}>
+                                <div
+                                    className={styles.autoProgressFill}
+                                    style={{ width: progress + '%' }}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <label className={styles.label}>Прогресс: {progress}%</label>
+                            <input
+                                className={styles.range}
+                                type="range"
+                                min={0}
+                                max={100}
+                                value={progress}
+                                onChange={(e) => setProgress(Number(e.target.value))}
+                            />
+                        </>
+                    )}
 
-                {/* Notes section — only in edit mode */}
-                {isEdit && (
-                    <div className={styles.notesSection}>
-                        <div className={styles.notesHeader}>
+                    <label className={styles.label}>Дедлайн</label>
+                    <input
+                        className={styles.input}
+                        type="date"
+                        value={deadline}
+                        onChange={(e) => setDeadline(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
+
+                    {/* Tasks section — only in edit mode */}
+                    {isEdit && (
+                        <div className={styles.tasksSection}>
+                            <div className={styles.tasksSectionHeader}>
+                            <span className={styles.label} style={{ marginBottom: 0 }}>
+                                Задачи ({doneCount}/{tasks.length})
+                            </span>
+                            </div>
+
+                            <div className={styles.taskInput}>
+                                <input
+                                    className={styles.taskInputField}
+                                    placeholder="Добавить задачу..."
+                                    value={newTaskText}
+                                    onChange={(e) => setNewTaskText(e.target.value)}
+                                    onKeyDown={handleTaskKeyDown}
+                                />
+                                <button
+                                    className={styles.taskAddBtn}
+                                    onClick={handleAddTask}
+                                    disabled={!newTaskText.trim() || addingTask}
+                                >
+                                    +
+                                </button>
+                            </div>
+
+                            <div className={styles.tasksList}>
+                                {tasks.map((t) => (
+                                    <div key={t.id} className={`${styles.taskItem} ${t.done ? styles.taskDone : ''}`}>
+                                        <button
+                                            className={t.done ? styles.taskCheckDone : styles.taskCheck}
+                                            onClick={() => handleToggleTask(t)}
+                                        >
+                                            {t.done ? '✓' : ''}
+                                        </button>
+                                        <span className={t.done ? styles.taskTextDone : styles.taskText}>
+                                        {t.text}
+                                    </span>
+                                        <button
+                                            className={styles.taskDeleteBtn}
+                                            onClick={() => handleDeleteTask(t.id)}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                                {tasks.length === 0 && (
+                                    <div className={styles.tasksEmpty}>Разбейте проект на задачи</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Notes section — only in edit mode */}
+                    {isEdit && (
+                        <div className={styles.notesSection}>
+                            <div className={styles.notesHeader}>
                             <span className={styles.label} style={{ marginBottom: 0 }}>
                                 Заметки ({notes.length})
                             </span>
-                        </div>
+                            </div>
 
-                        <div className={styles.noteInput}>
+                            <div className={styles.noteInput}>
                             <textarea
                                 className={styles.noteTextarea}
                                 placeholder="Написать заметку..."
@@ -196,51 +379,53 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                                 onChange={(e) => setNewNote(e.target.value)}
                                 rows={2}
                             />
-                            <div className={styles.noteActions}>
-                                <label className={styles.visibilityToggle}>
-                                    <input
-                                        type="checkbox"
-                                        checked={noteVisible}
-                                        onChange={(e) => setNoteVisible(e.target.checked)}
-                                    />
-                                    <span className={styles.visibilityLabel}>
+                                <div className={styles.noteActions}>
+                                    <label className={styles.visibilityToggle}>
+                                        <input
+                                            type="checkbox"
+                                            checked={noteVisible}
+                                            onChange={(e) => setNoteVisible(e.target.checked)}
+                                        />
+                                        <span className={styles.visibilityLabel}>
                                         {noteVisible ? '👁 Видна клиенту' : '🔒 Только для вас'}
                                     </span>
-                                </label>
-                                <button
-                                    className={styles.addNoteBtn}
-                                    onClick={handleAddNote}
-                                    disabled={!newNote.trim() || addingNote}
-                                >
-                                    {addingNote ? '...' : '+ Добавить'}
-                                </button>
+                                    </label>
+                                    <button
+                                        className={styles.addNoteBtn}
+                                        onClick={handleAddNote}
+                                        disabled={!newNote.trim() || addingNote}
+                                    >
+                                        {addingNote ? '...' : '+ Добавить'}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className={styles.notesList}>
-                            {notes.map((n) => (
-                                <div key={n.id} className={styles.noteItem}>
-                                    <div className={styles.noteText}>{n.text}</div>
-                                    <div className={styles.noteMeta}>
-                                        <span>{formatNoteDate(n.created_at)}</span>
-                                        <span className={n.visible_to_client ? styles.noteVisible : styles.notePrivate}>
+                            <div className={styles.notesList}>
+                                {notes.map((n) => (
+                                    <div key={n.id} className={styles.noteItem}>
+                                        <div className={styles.noteText}>{n.text}</div>
+                                        <div className={styles.noteMeta}>
+                                            <span>{formatNoteDate(n.created_at)}</span>
+                                            <span className={n.visible_to_client ? styles.noteVisible : styles.notePrivate}>
                                             {n.visible_to_client ? '👁 Клиент видит' : '🔒 Приватная'}
                                         </span>
-                                        <button
-                                            className={styles.noteDeleteBtn}
-                                            onClick={() => handleDeleteNote(n.id)}
-                                        >
-                                            ✕
-                                        </button>
+                                            <button
+                                                className={styles.noteDeleteBtn}
+                                                onClick={() => handleDeleteNote(n.id)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                            {notes.length === 0 && (
-                                <div className={styles.notesEmpty}>Заметок пока нет</div>
-                            )}
+                                ))}
+                                {notes.length === 0 && (
+                                    <div className={styles.notesEmpty}>Заметок пока нет</div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+
+                </div>{/* end modalBody */}
 
                 <div className={styles.actions}>
                     {isEdit && onDelete && (
