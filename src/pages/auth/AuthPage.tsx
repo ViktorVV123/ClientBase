@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './AuthPage.module.scss';
 
 interface AuthPageProps {
@@ -8,6 +9,7 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     const { signIn, signUp } = useAuth();
+    const { t } = useI18n();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -22,26 +24,26 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         setLoading(true);
 
         if (!email || !password) {
-            setError('Введите email и пароль');
+            setError(t.enterCredentials);
             setLoading(false);
             return;
         }
 
         if (!isLogin && !fullName) {
-            setError('Введите ваше имя');
+            setError(t.enterName);
             setLoading(false);
             return;
         }
 
         if (isLogin) {
             const { error } = await signIn(email, password);
-            if (error) setError(translateError(error));
+            if (error) setError(translateError(error, t));
         } else {
             const { error } = await signUp(email, password, fullName);
             if (error) {
-                setError(translateError(error));
+                setError(translateError(error, t));
             } else {
-                setSuccess('Регистрация успешна! Проверьте почту для подтверждения.');
+                setSuccess(t.registerSuccess);
             }
         }
 
@@ -57,7 +59,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
             <div className={styles.card}>
                 {onBack && (
                     <button className={styles.backBtn} onClick={onBack}>
-                        ← Назад
+                        ← {t.back}
                     </button>
                 )}
 
@@ -67,18 +69,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                 </div>
 
                 <div className={styles.subtitle}>
-                    {isLogin
-                        ? 'Войдите в свой аккаунт'
-                        : 'Создайте аккаунт фрилансера'}
+                    {isLogin ? t.loginTitle : t.registerTitle}
                 </div>
 
                 {!isLogin && (
                     <>
-                        <label className={styles.label}>Полное имя</label>
+                        <label className={styles.label}>{t.fullName}</label>
                         <input
                             className={styles.input}
                             type="text"
-                            placeholder="Виктор Власюк"
+                            placeholder="John Smith"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -87,7 +87,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     </>
                 )}
 
-                <label className={styles.label}>Email</label>
+                <label className={styles.label}>{t.email}</label>
                 <input
                     className={styles.input}
                     type="email"
@@ -98,11 +98,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     autoFocus={isLogin}
                 />
 
-                <label className={styles.label}>Пароль</label>
+                <label className={styles.label}>{t.password}</label>
                 <input
                     className={styles.input}
                     type="password"
-                    placeholder="Минимум 6 символов"
+                    placeholder="••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -111,29 +111,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                 {error && <div className={styles.error}>{error}</div>}
                 {success && <div className={styles.success}>{success}</div>}
 
-                <button
-                    className={styles.submitBtn}
-                    onClick={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading
-                        ? 'Загрузка...'
-                        : isLogin
-                            ? 'Войти'
-                            : 'Зарегистрироваться'}
+                <button className={styles.submitBtn} onClick={handleSubmit} disabled={loading}>
+                    {loading ? t.loading : isLogin ? t.signIn : t.signUp}
                 </button>
 
                 <div className={styles.switchRow}>
-                    {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+                    {isLogin ? t.noAccount : t.hasAccount}
                     <button
                         className={styles.switchBtn}
-                        onClick={() => {
-                            setIsLogin(!isLogin);
-                            setError('');
-                            setSuccess('');
-                        }}
+                        onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
                     >
-                        {isLogin ? 'Создать' : 'Войти'}
+                        {isLogin ? t.create : t.signIn}
                     </button>
                 </div>
             </div>
@@ -141,10 +129,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     );
 };
 
-function translateError(msg: string): string {
-    if (msg.includes('Invalid login credentials')) return 'Неверный email или пароль';
-    if (msg.includes('User already registered')) return 'Этот email уже зарегистрирован';
-    if (msg.includes('Password should be')) return 'Пароль должен быть минимум 6 символов';
-    if (msg.includes('invalid email')) return 'Некорректный email';
+function translateError(msg: string, t: any): string {
+    if (msg.includes('Invalid login credentials')) return t.wrongCredentials;
+    if (msg.includes('User already registered')) return t.emailExists;
+    if (msg.includes('Password should be')) return t.shortPassword;
+    if (msg.includes('invalid email')) return t.invalidEmail;
     return msg;
 }

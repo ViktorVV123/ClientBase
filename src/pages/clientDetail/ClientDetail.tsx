@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, { useState, useRef } from 'react';
 import {
     Client,
     ClientFile,
@@ -21,6 +21,7 @@ import { InvoiceModal } from '@/components/modal/InvoiceModal';
 import { BrandingSettings } from '@/components/branding/BrandingSettings';
 import { NotificationSettings } from '@/components/notifications/NotificationSettings';
 import { TimeTab } from '@/components/timeTracking/TimeTab';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './ClientDetail.module.scss';
 
 interface TimerState {
@@ -47,14 +48,6 @@ interface ClientDetailProps {
 
 type TabKey = 'projects' | 'invoices' | 'files' | 'time' | 'portal';
 
-const TABS: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'projects', label: 'Проекты', icon: '📋' },
-    { key: 'invoices', label: 'Счета',   icon: '💳' },
-    { key: 'files',    label: 'Файлы',   icon: '📁' },
-    { key: 'time',     label: 'Время',   icon: '⏱️' },
-    { key: 'portal',   label: 'Портал',  icon: '🔗' },
-];
-
 const KANBAN_COLS: ProjectStatus[] = ['brief', 'in_progress', 'review', 'done'];
 
 export const ClientDetail: React.FC<ClientDetailProps> = ({
@@ -66,6 +59,14 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                                                               onDataChanged,
                                                               timerState,
                                                           }) => {
+    const { t } = useI18n();
+    const TABS: { key: TabKey; label: string; icon: string }[] = [
+        { key: 'projects', label: t.tabProjects, icon: '📋' },
+        { key: 'invoices', label: t.tabInvoices, icon: '💳' },
+        { key: 'files',    label: t.tabFiles,    icon: '📁' },
+        { key: 'time',     label: t.tabTime,     icon: '⏱️' },
+        { key: 'portal',   label: t.tabPortal,   icon: '🔗' },
+    ];
     const [tab, setTab] = useState<TabKey>('projects');
     const [showPortal, setShowPortal] = useState(false);
     const [showProjectModal, setShowProjectModal] = useState(false);
@@ -278,11 +279,11 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                 </div>
                 {onEditClient && (
                     <button className={styles.editBtn} onClick={onEditClient}>
-                        ✏️ Редактировать
+                        {t.editClient}
                     </button>
                 )}
                 <button className={styles.previewBtn} onClick={() => setShowPortal(true)}>
-                    👁️ Предпросмотр портала
+                    {t.previewPortal}
                 </button>
             </div>
 
@@ -409,6 +410,8 @@ const ProjectsTab: React.FC<{
     onEdit: (p: Project) => void;
     onStatusChange: (projectId: number, data: { name: string; status: string; progress: number; deadline: string; description?: string; priority?: string }) => void;
 }> = ({ projects, onAdd, onEdit, onStatusChange }) => {
+    const { t } = useI18n();
+    const statusLabels: Record<string, string> = { brief: t.statusBrief, in_progress: t.statusInProgress, review: t.statusReview, done: t.statusDone };
     const [draggedId, setDraggedId] = useState<number | null>(null);
     const [dragOverCol, setDragOverCol] = useState<ProjectStatus | null>(null);
 
@@ -456,13 +459,13 @@ const ProjectsTab: React.FC<{
         <>
             <div className={styles.sectionHead}>
                 <div className={styles.sectionTitle}>
-                    Проекты
+                    {t.tabProjects}
                     {projects.length === 0 && (
-                        <span className={styles.emptyHint}> — пока нет проектов</span>
+                        <span className={styles.emptyHint}> {t.noProjects}</span>
                     )}
                 </div>
                 <button className={styles.addBtn} onClick={onAdd}>
-                    + Добавить проект
+                    {t.addProject}
                 </button>
             </div>
             <div className={styles.kanban}>
@@ -483,7 +486,7 @@ const ProjectsTab: React.FC<{
                                     className={styles.kanbanDot}
                                     style={{ background: s.color }}
                                 />
-                                {s.label} ({items.length})
+                                {statusLabels[col] || s.label} ({items.length})
                             </div>
                             {items.map((p) => (
                                 <div
@@ -511,16 +514,16 @@ const ProjectsTab: React.FC<{
                                     </div>
                                     {p.deadline && (
                                         <div className={styles.kanbanDeadline}>
-                                            Дедлайн: {formatDate(p.deadline)}
+                                            {t.deadline}: {formatDate(p.deadline)}
                                         </div>
                                     )}
                                 </div>
                             ))}
                             {items.length === 0 && !isOver && (
-                                <div className={styles.kanbanEmpty}>Пусто</div>
+                                <div className={styles.kanbanEmpty}>{t.empty}</div>
                             )}
                             {isOver && (
-                                <div className={styles.kanbanDropHint}>Отпустите здесь</div>
+                                <div className={styles.kanbanDropHint}>{t.dropHere}</div>
                             )}
                         </div>
                     );
@@ -537,6 +540,8 @@ const InvoicesTab: React.FC<{ invoices: Invoice[]; onAdd: () => void; onEdit: (i
                                                                                                                onAdd,
                                                                                                                onEdit,
                                                                                                            }) => {
+    const { t } = useI18n();
+    const invStatusLabels: Record<string, string> = { paid: t.invoiceStatusPaid, pending: t.invoiceStatusPending, overdue: t.invoiceStatusOverdue };
     const total = invoices.reduce((s, i) => s + i.amount, 0);
     const paid = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
     const pending = invoices.filter((i) => i.status !== 'paid').reduce((s, i) => s + i.amount, 0);
@@ -544,41 +549,39 @@ const InvoicesTab: React.FC<{ invoices: Invoice[]; onAdd: () => void; onEdit: (i
     return (
         <>
             <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Счета</div>
-                <button className={styles.addBtn} onClick={onAdd}>
-                    + Новый счёт
-                </button>
+                <div className={styles.sectionTitle}>{t.tabInvoices}</div>
+                <button className={styles.addBtn} onClick={onAdd}>{t.newInvoice}</button>
             </div>
 
             {invoices.length > 0 && (
                 <div className={styles.invoiceStats}>
                     <div className={styles.invoiceStat}>
-                        <span className={styles.invoiceStatLabel}>Всего</span>
+                        <span className={styles.invoiceStatLabel}>{t.totalAmount}</span>
                         <span className={styles.invoiceStatValue}>{formatMoney(total)}</span>
                     </div>
                     <div className={styles.invoiceStat}>
-                        <span className={styles.invoiceStatLabel}>Оплачено</span>
+                        <span className={styles.invoiceStatLabel}>{t.paidAmount}</span>
                         <span className={styles.invoiceStatValueGreen}>{formatMoney(paid)}</span>
                     </div>
                     <div className={styles.invoiceStat}>
-                        <span className={styles.invoiceStatLabel}>К оплате</span>
+                        <span className={styles.invoiceStatLabel}>{t.pendingAmount}</span>
                         <span className={styles.invoiceStatValueYellow}>{formatMoney(pending)}</span>
                     </div>
                 </div>
             )}
 
             {invoices.length === 0 ? (
-                <div className={styles.empty}>Счетов пока нет. Создайте первый!</div>
+                <div className={styles.empty}>{t.noInvoices}</div>
             ) : (
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead>
                         <tr>
-                            <th>Номер</th>
-                            <th>Сумма</th>
-                            <th>Дата</th>
-                            <th>Оплата до</th>
-                            <th>Статус</th>
+                            <th>{t.invoiceNumber}</th>
+                            <th>{t.invoiceAmount}</th>
+                            <th>{t.invoiceDate}</th>
+                            <th>{t.invoiceDueDate}</th>
+                            <th>{t.invoiceStatus}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -589,16 +592,11 @@ const InvoicesTab: React.FC<{ invoices: Invoice[]; onAdd: () => void; onEdit: (i
                                     <td className={styles.bold}>{inv.number}</td>
                                     <td className={styles.amount}>{formatMoney(inv.amount)}</td>
                                     <td className={styles.muted}>{formatDate(inv.date)}</td>
-                                    <td className={styles.muted}>
-                                        {inv.dueDate ? formatDate(inv.dueDate) : '—'}
-                                    </td>
+                                    <td className={styles.muted}>{inv.dueDate ? formatDate(inv.dueDate) : '—'}</td>
                                     <td>
-                                            <span
-                                                className={styles.badge}
-                                                style={{ color: s.color, background: s.bg }}
-                                            >
-                                                ● {s.label}
-                                            </span>
+                                        <span className={styles.badge} style={{ color: s.color, background: s.bg }}>
+                                            ● {invStatusLabels[inv.status] || s.label}
+                                        </span>
                                     </td>
                                 </tr>
                             );
@@ -619,6 +617,7 @@ const FilesTab: React.FC<{
     onDownload: (f: ClientFile) => void;
     onDelete: (f: ClientFile) => void;
 }> = ({ files, onUpload, onDownload, onDelete }) => {
+    const { t, locale } = useI18n();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -632,32 +631,21 @@ const FilesTab: React.FC<{
         }
     };
 
+    const uploadLabel = uploading ? (locale === 'ru' ? '⏳ Загрузка...' : '⏳ Uploading...') : (locale === 'ru' ? '+ Загрузить файл' : '+ Upload File');
+    const noFilesHint = locale === 'ru' ? 'Загрузите файлы для клиента — они будут доступны в портале' : 'Upload files for your client — they will be available in the portal';
+
     return (
         <>
             <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Файлы</div>
-                <button
-                    className={styles.addBtn}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                >
-                    {uploading ? '⏳ Загрузка...' : '+ Загрузить файл'}
-                </button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={handleFileChange}
-                />
+                <div className={styles.sectionTitle}>{t.tabFiles}</div>
+                <button className={styles.addBtn} onClick={() => fileInputRef.current?.click()} disabled={uploading}>{uploadLabel}</button>
+                <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileChange} />
             </div>
             {files.length === 0 ? (
                 <div className={styles.emptyFiles}>
                     <div className={styles.emptyIcon}>📁</div>
-                    <div className={styles.emptyText}>Файлов пока нет</div>
-                    <div className={styles.emptyHint}>
-                        Загрузите файлы для клиента — они будут доступны в портале
-                    </div>
+                    <div className={styles.emptyText}>{t.noFiles}</div>
+                    <div className={styles.emptyHint}>{noFilesHint}</div>
                 </div>
             ) : (
                 <div className={styles.tableWrapper}>
@@ -666,42 +654,17 @@ const FilesTab: React.FC<{
                             <span className={styles.fileIcon}>{FILE_ICONS[f.type] || '📄'}</span>
                             <div className={styles.fileInfo}>
                                 <div className={styles.fileName}>{f.name}</div>
-                                <div className={styles.fileMeta}>
-                                    {f.size} · {formatDate(f.date)}
-                                </div>
+                                <div className={styles.fileMeta}>{f.size} · {formatDate(f.date)}</div>
                             </div>
                             {deleteConfirmId === f.id ? (
                                 <div className={styles.fileActions}>
-                                    <button
-                                        className={styles.fileDeleteConfirm}
-                                        onClick={() => {
-                                            onDelete(f);
-                                            setDeleteConfirmId(null);
-                                        }}
-                                    >
-                                        Удалить
-                                    </button>
-                                    <button
-                                        className={styles.fileCancelBtn}
-                                        onClick={() => setDeleteConfirmId(null)}
-                                    >
-                                        Нет
-                                    </button>
+                                    <button className={styles.fileDeleteConfirm} onClick={() => { onDelete(f); setDeleteConfirmId(null); }}>{t.delete}</button>
+                                    <button className={styles.fileCancelBtn} onClick={() => setDeleteConfirmId(null)}>{t.no}</button>
                                 </div>
                             ) : (
                                 <div className={styles.fileActions}>
-                                    <button
-                                        className={styles.downloadBtn}
-                                        onClick={() => onDownload(f)}
-                                    >
-                                        ⬇ Скачать
-                                    </button>
-                                    <button
-                                        className={styles.fileDeleteBtn}
-                                        onClick={() => setDeleteConfirmId(f.id)}
-                                    >
-                                        🗑
-                                    </button>
+                                    <button className={styles.downloadBtn} onClick={() => onDownload(f)}>⬇ {t.download}</button>
+                                    <button className={styles.fileDeleteBtn} onClick={() => setDeleteConfirmId(f.id)}>🗑</button>
                                 </div>
                             )}
                         </div>
@@ -720,6 +683,7 @@ const PortalTab: React.FC<{
     isPro?: boolean;
     onUpgrade?: () => void;
 }> = ({ client, onPreview, isPro = false, onUpgrade }) => {
+    const { t, locale } = useI18n();
     const [portalToken, setPortalToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -775,31 +739,33 @@ const PortalTab: React.FC<{
 
     return (
         <div>
-            {/* Ссылка для клиента */}
+            {/* Client link */}
             <div className={styles.portalLinkCard}>
-                <div className={styles.portalLinkLabel}>Ссылка для клиента</div>
+                <div className={styles.portalLinkLabel}>{t.portalLink}</div>
                 {portalUrl ? (
                     <>
                         <div className={styles.portalLinkRow}>
                             <div className={styles.portalLinkValue}>{portalUrl}</div>
                             <button className={styles.copyBtn} onClick={handleCopy}>
-                                {copied ? '✅ Скопировано!' : '📋 Копировать'}
+                                {copied ? `✅ ${t.copied}` : `📋 ${t.copyLink}`}
                             </button>
                         </div>
                         <div className={styles.portalActiveRow}>
-                            <span className={styles.portalActiveLabel}>● Портал активен</span>
+                            <span className={styles.portalActiveLabel}>● {locale === 'ru' ? 'Портал активен' : 'Portal active'}</span>
                             <button className={styles.deactivateBtn} onClick={handleDeactivate} disabled={loading}>
-                                Деактивировать
+                                {t.deactivateLink}
                             </button>
                         </div>
                     </>
                 ) : (
                     <div className={styles.portalInactive}>
                         <div className={styles.portalInactiveText}>
-                            Портал не активирован. Нажмите чтобы создать ссылку для клиента.
+                            {locale === 'ru'
+                                ? 'Портал не активирован. Нажмите чтобы создать ссылку для клиента.'
+                                : 'Portal is not active. Click to generate a link for your client.'}
                         </div>
                         <button className={styles.activateBtn} onClick={handleActivate} disabled={loading}>
-                            {loading ? 'Создание...' : '🔗 Активировать портал'}
+                            {loading ? t.creating : `🔗 ${t.generateLink}`}
                         </button>
                     </div>
                 )}
@@ -814,7 +780,7 @@ const PortalTab: React.FC<{
             {/* Предпросмотр */}
             <div className={styles.portalActions}>
                 <button className={styles.previewBtnPrimary} onClick={onPreview}>
-                    👁️ Предпросмотр портала клиента
+                    {t.previewPortal}
                 </button>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Client, STATUS_MAP, formatDate, formatMoney } from '@/assets/data/data';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './CalendarPage.module.scss';
 
 interface CalendarPageProps {
@@ -18,11 +19,18 @@ interface Event {
 }
 
 export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectClient }) => {
-    // Собираем все события
+    const { t, locale } = useI18n();
+
+    const statusLabels: Record<string, string> = {
+        brief: t.statusBrief,
+        in_progress: t.statusInProgress,
+        review: t.statusReview,
+        done: t.statusDone,
+    };
+
     const events: Event[] = [];
 
     clients.forEach((c) => {
-        // Дедлайны проектов
         c.projects.forEach((p) => {
             if (p.deadline && p.status !== 'done') {
                 events.push({
@@ -30,14 +38,13 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                     date: p.deadline,
                     type: 'deadline',
                     title: p.name,
-                    subtitle: `${STATUS_MAP[p.status].label} · ${p.progress}%`,
+                    subtitle: `${statusLabels[p.status] || p.status} · ${p.progress}%`,
                     client: c,
                     color: STATUS_MAP[p.status].color,
                 });
             }
         });
 
-        // Счета к оплате
         c.invoices.forEach((inv) => {
             if (inv.status === 'pending' && inv.dueDate) {
                 events.push({
@@ -45,7 +52,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                     date: inv.dueDate,
                     type: 'invoice',
                     title: `${inv.number} — ${formatMoney(inv.amount)}`,
-                    subtitle: 'Ожидает оплаты',
+                    subtitle: t.awaitingPayment,
                     client: c,
                     color: '#f59e0b',
                 });
@@ -56,7 +63,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                     date: inv.dueDate || inv.date,
                     type: 'overdue',
                     title: `${inv.number} — ${formatMoney(inv.amount)}`,
-                    subtitle: 'Просрочен!',
+                    subtitle: t.overdueExcl,
                     client: c,
                     color: '#ef4444',
                 });
@@ -64,7 +71,6 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
         });
     });
 
-    // Сортируем по дате
     events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const today = new Date().toISOString().split('T')[0];
@@ -72,18 +78,27 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
     const upcomingEvents = events.filter((e) => e.date > today);
     const overdueEvents = events.filter((e) => e.date < today);
 
-    const typeIcons: Record<string, string> = {
-        deadline: '📋',
-        invoice: '💳',
-        overdue: '🔴',
+    const typeIcons: Record<string, string> = { deadline: '📋', invoice: '💳', overdue: '🔴' };
+
+    const pluralEvents = (n: number) => {
+        if (locale === 'en') return n === 1 ? t.event : t.events5plus;
+        if (n === 1) return t.event;
+        if (n >= 2 && n <= 4) return t.events2to4;
+        return t.events5plus;
+    };
+
+    const sectionLabels = {
+        overdue: locale === 'ru' ? 'Просрочено' : 'Overdue',
+        today: locale === 'ru' ? 'Сегодня' : 'Today',
+        upcoming: locale === 'ru' ? 'Предстоящие' : 'Upcoming',
+        noEvents: locale === 'ru' ? 'Нет предстоящих событий' : 'No upcoming events',
+        noEventsHint: locale === 'ru'
+            ? 'Дедлайны проектов и даты оплаты счетов появятся здесь автоматически'
+            : 'Project deadlines and invoice due dates will appear here automatically',
     };
 
     const renderEvent = (event: Event) => (
-        <div
-            key={event.id}
-            className={styles.eventCard}
-            onClick={() => onSelectClient(event.client)}
-        >
+        <div key={event.id} className={styles.eventCard} onClick={() => onSelectClient(event.client)}>
             <div className={styles.eventIcon}>{typeIcons[event.type]}</div>
             <div className={styles.eventInfo}>
                 <div className={styles.eventTitle}>{event.title}</div>
@@ -99,19 +114,15 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
     return (
         <>
             <div className={styles.header}>
-                <div className={styles.headerTitle}>📅 Календарь</div>
-                <div className={styles.headerSub}>
-                    {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
-                </div>
+                <div className={styles.headerTitle}>📅 {t.calendarTitle}</div>
+                <div className={styles.headerSub}>{events.length} {pluralEvents(events.length)}</div>
             </div>
 
             {events.length === 0 && (
                 <div className={styles.empty}>
                     <div className={styles.emptyIcon}>📅</div>
-                    <div className={styles.emptyTitle}>Нет предстоящих событий</div>
-                    <div className={styles.emptyText}>
-                        Дедлайны проектов и даты оплаты счетов появятся здесь автоматически
-                    </div>
+                    <div className={styles.emptyTitle}>{sectionLabels.noEvents}</div>
+                    <div className={styles.emptyText}>{sectionLabels.noEventsHint}</div>
                 </div>
             )}
 
@@ -119,11 +130,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>
                         <span className={styles.sectionDot} style={{ background: '#ef4444' }} />
-                        Просрочено ({overdueEvents.length})
+                        {sectionLabels.overdue} ({overdueEvents.length})
                     </div>
-                    <div className={styles.eventList}>
-                        {overdueEvents.map(renderEvent)}
-                    </div>
+                    <div className={styles.eventList}>{overdueEvents.map(renderEvent)}</div>
                 </div>
             )}
 
@@ -131,11 +140,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>
                         <span className={styles.sectionDot} style={{ background: '#6366f1' }} />
-                        Сегодня ({todayEvents.length})
+                        {sectionLabels.today} ({todayEvents.length})
                     </div>
-                    <div className={styles.eventList}>
-                        {todayEvents.map(renderEvent)}
-                    </div>
+                    <div className={styles.eventList}>{todayEvents.map(renderEvent)}</div>
                 </div>
             )}
 
@@ -143,11 +150,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ clients, onSelectCli
                 <div className={styles.section}>
                     <div className={styles.sectionTitle}>
                         <span className={styles.sectionDot} style={{ background: '#22c55e' }} />
-                        Предстоящие ({upcomingEvents.length})
+                        {sectionLabels.upcoming} ({upcomingEvents.length})
                     </div>
-                    <div className={styles.eventList}>
-                        {upcomingEvents.map(renderEvent)}
-                    </div>
+                    <div className={styles.eventList}>{upcomingEvents.map(renderEvent)}</div>
                 </div>
             )}
         </>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plan } from '@/lib/subscription';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './TopBar.module.scss';
 
 interface TopBarProps {
@@ -21,14 +22,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                                                   onUpgrade,
                                                   onMenuToggle,
                                               }) => {
+    const { t, locale, setLocale } = useI18n();
+
     const initials = userEmail
         ? userEmail.slice(0, 2).toUpperCase()
-        : 'ВВ';
+        : 'CB';
 
     return (
         <div className={styles.topBar}>
             <div className={styles.left}>
-                {/* Mobile burger */}
                 {onMenuToggle && (
                     <button className={styles.burgerBtn} onClick={onMenuToggle}>
                         <span className={styles.burgerLine} />
@@ -51,11 +53,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
 
             <div className={styles.right}>
+                <button
+                    className={styles.langBtn}
+                    onClick={() => setLocale(locale === 'ru' ? 'en' : 'ru')}
+                >
+                    {locale === 'ru' ? 'EN' : 'RU'}
+                </button>
                 {plan === 'pro' ? (
                     <div className={styles.planBadgePro}>⭐ Pro</div>
                 ) : (
                     <button className={styles.upgradeBtnSmall} onClick={onUpgrade}>
-                        Upgrade
+                        {t.upgrade}
                     </button>
                 )}
                 <div className={styles.userAvatar} title={userEmail}>
@@ -63,7 +71,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </div>
                 {onSignOut && (
                     <button className={styles.signOutBtn} onClick={onSignOut}>
-                        Выйти
+                        {t.signOut}
                     </button>
                 )}
             </div>

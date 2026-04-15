@@ -1,5 +1,6 @@
 import React from 'react';
 import { Client, formatMoney, formatDate } from '@/assets/data/data';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './Dashboard.module.scss';
 
 interface DashboardProps {
@@ -8,6 +9,8 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ clients, onSelectClient }) => {
+    const { t } = useI18n();
+
     const totalRevenue = clients
         .flatMap((c) => c.invoices)
         .filter((i) => i.status === 'paid')
@@ -19,7 +22,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onSelectClient })
         .reduce((s, i) => s + i.amount, 0);
 
     const totalProjects = clients.flatMap((c) => c.projects).length;
-    const activeProjects = clients
+    const activeProjectsCount = clients
         .flatMap((c) => c.projects)
         .filter((p) => p.status !== 'done').length;
 
@@ -27,42 +30,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onSelectClient })
         <>
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Клиенты</div>
+                    <div className={styles.statLabel}>{t.clientsCount}</div>
                     <div className={`${styles.statValue} ${styles.accent}`}>{clients.length}</div>
-                    <div className={styles.statSub}>активных</div>
+                    <div className={styles.statSub}>{t.active}</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Получено</div>
+                    <div className={styles.statLabel}>{t.received}</div>
                     <div className={`${styles.statValue} ${styles.success}`}>{formatMoney(totalRevenue)}</div>
-                    <div className={styles.statSub}>всего оплачено</div>
+                    <div className={styles.statSub}>{t.totalPaid}</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Ожидает оплаты</div>
+                    <div className={styles.statLabel}>{t.awaitingPayment}</div>
                     <div className={`${styles.statValue} ${styles.warning}`}>{formatMoney(pendingRevenue)}</div>
-                    <div className={styles.statSub}>в ожидании</div>
+                    <div className={styles.statSub}>{t.pending}</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Проекты</div>
+                    <div className={styles.statLabel}>{t.projects}</div>
                     <div className={`${styles.statValue} ${styles.purple}`}>
-                        {activeProjects}/{totalProjects}
+                        {activeProjectsCount}/{totalProjects}
                     </div>
-                    <div className={styles.statSub}>активных / всего</div>
+                    <div className={styles.statSub}>{t.activeSlashTotal}</div>
                 </div>
             </div>
 
             <div className={styles.sectionHead}>
-                <div className={styles.sectionTitle}>Клиенты</div>
+                <div className={styles.sectionTitle}>{t.clients}</div>
             </div>
 
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
                     <tr>
-                        <th>Клиент</th>
-                        <th>Проекты</th>
-                        <th>Оплачено</th>
-                        <th>К оплате</th>
-                        <th>Последняя активность</th>
+                        <th>{t.client}</th>
+                        <th>{t.projectsCol}</th>
+                        <th>{t.paidCol}</th>
+                        <th>{t.pendingCol}</th>
+                        <th>{t.lastActivity}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -97,7 +100,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onSelectClient })
                                 </td>
                                 <td>
                                     <span className={styles.accentText}>{active}</span>
-                                    <span className={styles.dimText}> активных</span>
+                                    <span className={styles.dimText}> {t.activeProjects}</span>
                                 </td>
                                 <td className={styles.successText}>{formatMoney(paid)}</td>
                                 <td className={pending > 0 ? styles.warningText : styles.dimText}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchProfile, updateProfile } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { Plan } from '@/lib/subscription';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './SettingsPage.module.scss';
 
 interface SettingsPageProps {
@@ -39,12 +40,12 @@ const EMPTY_PROFILE: ProfileData = {
 };
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onUpgrade }) => {
+    const { t } = useI18n();
     const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState<string | null>(null);
     const [saved, setSaved] = useState<string | null>(null);
 
-    // Section collapse state
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
         profile: true,
         billing: false,
@@ -53,9 +54,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
         password: false,
     });
 
-    useEffect(() => {
-        loadProfile();
-    }, []);
+    useEffect(() => { loadProfile(); }, []);
 
     const loadProfile = async () => {
         try {
@@ -106,7 +105,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
             await supabase.auth.resetPasswordForEmail(userEmail, {
                 redirectTo: `${window.location.origin}`,
             });
-            alert('Письмо для сброса пароля отправлено на ' + userEmail);
+            alert(t.passwordResetSent + userEmail);
         } catch (err) {
             console.error('Failed to send reset:', err);
         }
@@ -116,224 +115,139 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
         setProfile((prev) => ({ ...prev, [key]: value }));
     };
 
+    const saveBtn = (section: string) => saving === section ? t.saving : t.save;
+
     if (loading) {
         return (
             <div className={styles.settings}>
-                <h1 className={styles.title}>Настройки</h1>
-                <div style={{ color: 'var(--text-muted)', padding: 20 }}>Загрузка...</div>
+                <h1 className={styles.title}>{t.settingsTitle}</h1>
+                <div style={{ color: 'var(--text-muted)', padding: 20 }}>{t.loading}</div>
             </div>
         );
     }
 
     return (
         <div className={styles.settings}>
-            <h1 className={styles.title}>Настройки</h1>
+            <h1 className={styles.title}>{t.settingsTitle}</h1>
 
-            {/* ─── Profile ────────────────────────────────────────── */}
+            {/* ─── Profile ─────────────────────────────────── */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('profile')}>
                     <span className={styles.sectionIcon}>👤</span>
-                    <span className={styles.sectionTitle}>Профиль</span>
+                    <span className={styles.sectionTitle}>{t.profile}</span>
                     <span className={openSections.profile ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.profile && (
                     <div className={styles.form}>
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Имя</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.full_name}
-                                    onChange={(e) => update('full_name', e.target.value)}
-                                    placeholder="Виктор Власюк"
-                                />
+                                <label className={styles.label}>{t.name}</label>
+                                <input className={styles.input} value={profile.full_name} onChange={(e) => update('full_name', e.target.value)} />
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>Email</label>
-                                <input
-                                    className={styles.input}
-                                    value={userEmail || ''}
-                                    disabled
-                                    style={{ opacity: 0.5 }}
-                                />
-                                <span className={styles.hint}>Изменить email нельзя</span>
+                                <label className={styles.label}>{t.email}</label>
+                                <input className={styles.input} value={userEmail || ''} disabled style={{ opacity: 0.5 }} />
+                                <span className={styles.hint}>{t.emailCantChange}</span>
                             </div>
                         </div>
                         <div className={styles.field}>
-                            <label className={styles.label}>Название компании / бренда</label>
-                            <input
-                                className={styles.input}
-                                value={profile.company_name}
-                                onChange={(e) => update('company_name', e.target.value)}
-                                placeholder="Моя Студия"
-                            />
-                            <span className={styles.hint}>Отображается в портале клиента</span>
+                            <label className={styles.label}>{t.companyBrand}</label>
+                            <input className={styles.input} value={profile.company_name} onChange={(e) => update('company_name', e.target.value)} />
+                            <span className={styles.hint}>{t.shownInPortal}</span>
                         </div>
                         <div className={styles.actions}>
-                            <button
-                                className={styles.saveBtn}
-                                disabled={saving === 'profile'}
-                                onClick={() => handleSave('profile', {
-                                    full_name: profile.full_name,
-                                    company_name: profile.company_name,
-                                })}
-                            >
-                                {saving === 'profile' ? 'Сохраняю…' : 'Сохранить'}
-                            </button>
-                            {saved === 'profile' && <span className={styles.savedMsg}>✓ Сохранено</span>}
+                            <button className={styles.saveBtn} disabled={saving === 'profile'} onClick={() => handleSave('profile', { full_name: profile.full_name, company_name: profile.company_name })}>{saveBtn('profile')}</button>
+                            {saved === 'profile' && <span className={styles.savedMsg}>{t.saved}</span>}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* ─── Billing / Реквизиты ────────────────────────────── */}
+            {/* ─── Billing ─────────────────────────────────── */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('billing')}>
                     <span className={styles.sectionIcon}>🏦</span>
-                    <span className={styles.sectionTitle}>Реквизиты для счетов (в разработке)</span>
+                    <span className={styles.sectionTitle}>{t.billingDetails}</span>
                     <span className={openSections.billing ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.billing && (
                     <div className={styles.form}>
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Наименование ИП / Организации</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.business_name}
-                                    onChange={(e) => update('business_name', e.target.value)}
-                                    placeholder="ИП Иванов И.И."
-                                />
+                                <label className={styles.label}>{t.businessName}</label>
+                                <input className={styles.input} value={profile.business_name} onChange={(e) => update('business_name', e.target.value)} placeholder={t.businessNamePlaceholder} />
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>ИНН</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.inn}
-                                    onChange={(e) => update('inn', e.target.value)}
-                                    placeholder="1234567890"
-                                />
+                                <label className={styles.label}>{t.inn}</label>
+                                <input className={styles.input} value={profile.inn} onChange={(e) => update('inn', e.target.value)} placeholder="1234567890" />
                             </div>
                         </div>
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Банк</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.bank_name}
-                                    onChange={(e) => update('bank_name', e.target.value)}
-                                    placeholder="Тинькофф Банк"
-                                />
+                                <label className={styles.label}>{t.bank}</label>
+                                <input className={styles.input} value={profile.bank_name} onChange={(e) => update('bank_name', e.target.value)} />
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>БИК</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.bank_bik}
-                                    onChange={(e) => update('bank_bik', e.target.value)}
-                                    placeholder="044525974"
-                                />
+                                <label className={styles.label}>{t.bik}</label>
+                                <input className={styles.input} value={profile.bank_bik} onChange={(e) => update('bank_bik', e.target.value)} />
                             </div>
                         </div>
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Расчётный счёт</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.bank_account}
-                                    onChange={(e) => update('bank_account', e.target.value)}
-                                    placeholder="40802810000000000000"
-                                />
+                                <label className={styles.label}>{t.bankAccount}</label>
+                                <input className={styles.input} value={profile.bank_account} onChange={(e) => update('bank_account', e.target.value)} />
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>Корр. счёт</label>
-                                <input
-                                    className={styles.input}
-                                    value={profile.corr_account}
-                                    onChange={(e) => update('corr_account', e.target.value)}
-                                    placeholder="30101810000000000000"
-                                />
+                                <label className={styles.label}>{t.corrAccount}</label>
+                                <input className={styles.input} value={profile.corr_account} onChange={(e) => update('corr_account', e.target.value)} />
                             </div>
                         </div>
-                        <span className={styles.hint}>Эти данные будут подставляться в PDF-счета для клиентов</span>
+                        <span className={styles.hint}>{t.billingHint}</span>
                         <div className={styles.actions}>
-                            <button
-                                className={styles.saveBtn}
-                                disabled={saving === 'billing'}
-                                onClick={() => handleSave('billing', {
-                                    business_name: profile.business_name,
-                                    inn: profile.inn,
-                                    bank_name: profile.bank_name,
-                                    bank_account: profile.bank_account,
-                                    bank_bik: profile.bank_bik,
-                                    corr_account: profile.corr_account,
-                                })}
-                            >
-                                {saving === 'billing' ? 'Сохраняю…' : 'Сохранить'}
-                            </button>
-                            {saved === 'billing' && <span className={styles.savedMsg}>✓ Сохранено</span>}
+                            <button className={styles.saveBtn} disabled={saving === 'billing'} onClick={() => handleSave('billing', { business_name: profile.business_name, inn: profile.inn, bank_name: profile.bank_name, bank_account: profile.bank_account, bank_bik: profile.bank_bik, corr_account: profile.corr_account })}>{saveBtn('billing')}</button>
+                            {saved === 'billing' && <span className={styles.savedMsg}>{t.saved}</span>}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* ─── Rates & Currency ────────────────────────────────── */}
+            {/* ─── Rates ───────────────────────────────────── */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('rates')}>
                     <span className={styles.sectionIcon}>💰</span>
-                    <span className={styles.sectionTitle}>Валюта и ставка (В разработке)</span>
+                    <span className={styles.sectionTitle}>{t.currencyAndRate}</span>
                     <span className={openSections.rates ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.rates && (
                     <div className={styles.form}>
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Валюта</label>
-                                <select
-                                    className={styles.select}
-                                    value={profile.currency}
-                                    onChange={(e) => update('currency', e.target.value)}
-                                >
-                                    <option value="₽">₽ — Рубли</option>
-                                    <option value="$">$ — Доллары</option>
-                                    <option value="€">€ — Евро</option>
+                                <label className={styles.label}>{t.currency}</label>
+                                <select className={styles.select} value={profile.currency} onChange={(e) => update('currency', e.target.value)}>
+                                    <option value="₽">{t.rubles}</option>
+                                    <option value="$">{t.dollars}</option>
+                                    <option value="€">{t.euros}</option>
                                 </select>
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>Ставка по умолчанию ({profile.currency}/ч)</label>
-                                <input
-                                    className={styles.input}
-                                    type="number"
-                                    min="0"
-                                    value={profile.default_rate ?? ''}
-                                    onChange={(e) => update('default_rate', e.target.value ? parseFloat(e.target.value) : null)}
-                                    placeholder="2000"
-                                />
-                                <span className={styles.hint}>Подставляется при трекинге времени</span>
+                                <label className={styles.label}>{t.defaultRate} ({profile.currency}/h)</label>
+                                <input className={styles.input} type="number" min="0" value={profile.default_rate ?? ''} onChange={(e) => update('default_rate', e.target.value ? parseFloat(e.target.value) : null)} placeholder="2000" />
+                                <span className={styles.hint}>{t.defaultRateHint}</span>
                             </div>
                         </div>
                         <div className={styles.actions}>
-                            <button
-                                className={styles.saveBtn}
-                                disabled={saving === 'rates'}
-                                onClick={() => handleSave('rates', {
-                                    currency: profile.currency,
-                                    default_rate: profile.default_rate,
-                                })}
-                            >
-                                {saving === 'rates' ? 'Сохраняю…' : 'Сохранить'}
-                            </button>
-                            {saved === 'rates' && <span className={styles.savedMsg}>✓ Сохранено</span>}
+                            <button className={styles.saveBtn} disabled={saving === 'rates'} onClick={() => handleSave('rates', { currency: profile.currency, default_rate: profile.default_rate })}>{saveBtn('rates')}</button>
+                            {saved === 'rates' && <span className={styles.savedMsg}>{t.saved}</span>}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* ─── Subscription ────────────────────────────────────── */}
+            {/* ─── Subscription ─────────────────────────────── */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('subscription')}>
                     <span className={styles.sectionIcon}>⭐</span>
-                    <span className={styles.sectionTitle}>Подписка</span>
+                    <span className={styles.sectionTitle}>{t.subscription}</span>
                     <span className={openSections.subscription ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.subscription && (
@@ -343,41 +257,29 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
                                 {plan === 'pro' ? '⭐ Pro' : 'Free'}
                             </span>
                             <div className={styles.planInfo}>
-                                <div className={styles.planName}>
-                                    {plan === 'pro' ? 'Pro Plan' : 'Бесплатный план'}
-                                </div>
-                                <div className={styles.planDesc}>
-                                    {plan === 'pro'
-                                        ? 'Безлимит клиентов, брендинг, все функции'
-                                        : '1 клиент, базовые функции'}
-                                </div>
+                                <div className={styles.planName}>{plan === 'pro' ? t.proPlan : t.freePlan}</div>
+                                <div className={styles.planDesc}>{plan === 'pro' ? t.proPlanDesc : t.freePlanDesc}</div>
                             </div>
                             {plan !== 'pro' && (
-                                <button className={styles.upgradeBtn} onClick={onUpgrade}>
-                                    Перейти на Pro
-                                </button>
+                                <button className={styles.upgradeBtn} onClick={onUpgrade}>{t.goToPro}</button>
                             )}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* ─── Password ────────────────────────────────────────── */}
+            {/* ─── Password ─────────────────────────────────── */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader} onClick={() => toggleSection('password')}>
                     <span className={styles.sectionIcon}>🔒</span>
-                    <span className={styles.sectionTitle}>Безопасность</span>
+                    <span className={styles.sectionTitle}>{t.security}</span>
                     <span className={openSections.password ? styles.sectionToggleOpen : styles.sectionToggle}>▸</span>
                 </div>
                 {openSections.password && (
                     <div className={styles.form}>
                         <div className={styles.passwordRow}>
-                            <span className={styles.passwordNote}>
-                                Для смены пароля мы отправим ссылку на ваш email
-                            </span>
-                            <button className={styles.passwordBtn} onClick={handlePasswordReset}>
-                                Сбросить пароль
-                            </button>
+                            <span className={styles.passwordNote}>{t.passwordResetInfo}</span>
+                            <button className={styles.passwordBtn} onClick={handlePasswordReset}>{t.resetPassword}</button>
                         </div>
                     </div>
                 )}

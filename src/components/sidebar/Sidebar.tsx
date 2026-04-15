@@ -1,6 +1,7 @@
 import React from 'react';
 import { Client } from '@/assets/data/data';
 import { Plan } from '@/lib/subscription';
+import { useI18n } from '@/lib/i18n';
 import * as styles from './Sidebar.module.scss';
 
 interface SidebarProps {
@@ -32,6 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                     onClose,
                                                     activeView,
                                                 }) => {
+    const { t } = useI18n();
+
     const handleNav = (cb: () => void) => {
         cb();
         onClose?.();
@@ -39,14 +42,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <>
-            {/* Mobile overlay */}
             {isOpen && <div className={styles.overlay} onClick={onClose} />}
 
             <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
                 <div className={styles.logo}>
                     <div className={styles.logoMark}>CB</div>
                     <span>ClientBase</span>
-                    {/* Mobile close button */}
                     {onClose && (
                         <button className={styles.closeBtn} onClick={onClose}>✕</button>
                     )}
@@ -58,25 +59,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => handleNav(onDashboard)}
                     >
                         <span className={styles.navIcon}>📊</span>
-                        Дашборд
+                        {t.dashboard}
                     </button>
                     <button
                         className={`${styles.navItem} ${activeView === 'calendar' ? styles.navItemActive : ''}`}
                         onClick={() => handleNav(onCalendar || onDashboard)}
                     >
                         <span className={styles.navIcon}>📅</span>
-                        Календарь
+                        {t.calendar}
                     </button>
                     <button
                         className={`${styles.navItem} ${activeView === 'settings' ? styles.navItemActive : ''}`}
                         onClick={() => handleNav(onSettings || onDashboard)}
                     >
                         <span className={styles.navIcon}>⚙️</span>
-                        Настройки
+                        {t.settings}
                     </button>
                 </nav>
 
-                <div className={styles.sectionLabel}>Клиенты</div>
+                <div className={styles.sectionLabel}>{t.clients}</div>
 
                 <div className={styles.clientList}>
                     {clients.map((c) => (
@@ -92,17 +93,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 <div className={styles.sidebarFooter}>
-                    {/* Plan badge */}
                     <div className={plan === 'pro' ? styles.planBadgePro : styles.planBadgeFree}>
-                        {plan === 'pro' ? '⭐ Pro Plan' : `Free · ${clients.length}/1 клиент`}
+                        {plan === 'pro' ? t.planPro : t.freeLimit(clients.length)}
                     </div>
 
                     <button className={styles.addButton} onClick={() => handleNav(onAddClient)}>
-                        + Новый клиент
+                        {t.newClient}
                     </button>
                     {selectedClientId && (
                         <button className={styles.portalButton} onClick={() => handleNav(onPortalPreview)}>
-                            👁️ Портал клиента
+                            {t.clientPortal}
                         </button>
                     )}
 
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         rel="noopener noreferrer"
                         className={styles.supportLink}
                     >
-                        ✈️ Поддержка в Telegram
+                        {t.supportTg}
                     </a>
                 </div>
             </aside>
