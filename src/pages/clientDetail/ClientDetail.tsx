@@ -270,6 +270,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
                         setShowProjectModal(true);
                     }}
                     onEdit={handleEditProject}
+                    onStatusChange={handleUpdateProject}
                 />
             )}
             {tab === 'invoices' && (
@@ -336,69 +337,132 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
 
 // ─── Projects (Kanban) ───────────────────────────────────────────────────
 
-const ProjectsTab: React.FC<{ projects: Project[]; onAdd: () => void; onEdit: (p: Project) => void }> = ({
-                                                                                                             projects,
-                                                                                                             onAdd,
-                                                                                                             onEdit,
-                                                                                                         }) => (
-    <>
-        <div className={styles.sectionHead}>
-            <div className={styles.sectionTitle}>
-                Проекты
-                {projects.length === 0 && (
-                    <span className={styles.emptyHint}> — пока нет проектов</span>
-                )}
+const ProjectsTab: React.FC<{
+    projects: Project[];
+    onAdd: () => void;
+    onEdit: (p: Project) => void;
+    onStatusChange: (projectId: number, data: { name: string; status: string; progress: number; deadline: string }) => void;
+}> = ({ projects, onAdd, onEdit, onStatusChange }) => {
+    const [draggedId, setDraggedId] = useState<number | null>(null);
+    const [dragOverCol, setDragOverCol] = useState<ProjectStatus | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, project: Project) => {
+        setDraggedId(project.id);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(project.id));
+    };
+
+    const handleDragOver = (e: React.DragEvent, col: ProjectStatus) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOverCol(col);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverCol(null);
+    };
+
+    const handleDrop = (e: React.DragEvent, targetStatus: ProjectStatus) => {
+        e.preventDefault();
+        setDragOverCol(null);
+        setDraggedId(null);
+
+        const projectId = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        const project = projects.find((p) => p.id === projectId);
+        if (!project || project.status === targetStatus) return;
+
+        // Автоматический прогресс при перетаскивании (вперёд и назад)
+        let newProgress = project.progress;
+        if (targetStatus === 'brief') newProgress = 5;
+        if (targetStatus === 'in_progress') newProgress = Math.max(20, Math.min(newProgress, 60));
+        if (targetStatus === 'review') newProgress = Math.max(70, Math.min(newProgress, 95));
+        if (targetStatus === 'done') newProgress = 100;
+
+        onStatusChange(projectId, {
+            name: project.name,
+            status: targetStatus,
+            progress: newProgress,
+            deadline: project.deadline,
+        });
+    };
+
+    const handleDragEnd = () => {
+        setDraggedId(null);
+        setDragOverCol(null);
+    };
+
+    return (
+        <>
+            <div className={styles.sectionHead}>
+                <div className={styles.sectionTitle}>
+                    Проекты
+                    {projects.length === 0 && (
+                        <span className={styles.emptyHint}> — пока нет проектов</span>
+                    )}
+                </div>
+                <button className={styles.addBtn} onClick={onAdd}>
+                    + Добавить проект
+                </button>
             </div>
-            <button className={styles.addBtn} onClick={onAdd}>
-                + Добавить проект
-            </button>
-        </div>
-        <div className={styles.kanban}>
-            {KANBAN_COLS.map((col) => {
-                const s = STATUS_MAP[col];
-                const items = projects.filter((p) => p.status === col);
-                return (
-                    <div key={col} className={styles.kanbanCol}>
-                        <div className={styles.kanbanColTitle} style={{ color: s.color }}>
-                            <span
-                                className={styles.kanbanDot}
-                                style={{ background: s.color }}
-                            />
-                            {s.label} ({items.length})
-                        </div>
-                        {items.map((p) => (
-                            <div
-                                key={p.id}
-                                className={styles.kanbanCard}
-                                onClick={() => onEdit(p)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <div className={styles.kanbanCardName}>{p.name}</div>
-                                <div className={styles.progressRow}>
-                                    <div className={styles.progressBar}>
-                                        <div
-                                            className={styles.progressFill}
-                                            style={{ width: p.progress + '%', background: s.color }}
-                                        />
-                                    </div>
-                                    <span className={styles.progressLabel}>{p.progress}%</span>
-                                </div>
-                                {p.deadline && (
-                                    <div className={styles.kanbanDeadline}>
-                                        Дедлайн: {formatDate(p.deadline)}
-                                    </div>
-                                )}
+            <div className={styles.kanban}>
+                {KANBAN_COLS.map((col) => {
+                    const s = STATUS_MAP[col];
+                    const items = projects.filter((p) => p.status === col);
+                    const isOver = dragOverCol === col;
+                    return (
+                        <div
+                            key={col}
+                            className={`${styles.kanbanCol} ${isOver ? styles.kanbanColDragOver : ''}`}
+                            onDragOver={(e) => handleDragOver(e, col)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, col)}
+                        >
+                            <div className={styles.kanbanColTitle} style={{ color: s.color }}>
+                                <span
+                                    className={styles.kanbanDot}
+                                    style={{ background: s.color }}
+                                />
+                                {s.label} ({items.length})
                             </div>
-                        ))}
-                        {items.length === 0 && (
-                            <div className={styles.kanbanEmpty}>Пусто</div>
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    </>
-);
+                            {items.map((p) => (
+                                <div
+                                    key={p.id}
+                                    className={`${styles.kanbanCard} ${draggedId === p.id ? styles.kanbanCardDragging : ''}`}
+                                    onClick={() => onEdit(p)}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, p)}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <div className={styles.kanbanCardName}>{p.name}</div>
+                                    <div className={styles.progressRow}>
+                                        <div className={styles.progressBar}>
+                                            <div
+                                                className={styles.progressFill}
+                                                style={{ width: p.progress + '%', background: s.color }}
+                                            />
+                                        </div>
+                                        <span className={styles.progressLabel}>{p.progress}%</span>
+                                    </div>
+                                    {p.deadline && (
+                                        <div className={styles.kanbanDeadline}>
+                                            Дедлайн: {formatDate(p.deadline)}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {items.length === 0 && !isOver && (
+                                <div className={styles.kanbanEmpty}>Пусто</div>
+                            )}
+                            {isOver && (
+                                <div className={styles.kanbanDropHint}>Отпустите здесь</div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </>
+    );
+};
 
 // ─── Invoices ────────────────────────────────────────────────────────────
 
