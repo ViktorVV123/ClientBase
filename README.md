@@ -1,1 +1,1 @@
-https://client-base-chi.vercel.app/#features
+https://srmclientbase.com/
