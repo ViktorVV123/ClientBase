@@ -320,7 +320,6 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {showProjectModal && (
                 <ProjectModal
                     clientId={client.id}
-                    clientEmail={client.email}
                     project={editingProject}
                     onClose={() => {
                         setShowProjectModal(false);
@@ -334,7 +333,6 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({
             {showInvoiceModal && (
                 <InvoiceModal
                     clientId={client.id}
-                    clientEmail={client.email}
                     nextNumber={nextInvoiceNumber}
                     invoice={editingInvoice}
                     onClose={() => {
