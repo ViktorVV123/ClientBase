@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import * as styles from './PublicPortal.module.scss';
 
 interface Branding { companyName: string | null; brandColor: string | null; logoUrl: string | null; }
-interface PortalData { client: { name: string; company: string; color: string }; branding: Branding | null; projects: Project[]; invoices: Invoice[]; files: ClientFile[]; }
+interface PortalData { client: { name: string; company: string; color: string }; branding: Branding | null; cardNumber: string | null; projects: Project[]; invoices: Invoice[]; files: ClientFile[]; }
 
 export const PublicPortal: React.FC = () => {
     const { token } = useParams<{ token: string }>();
@@ -66,7 +66,7 @@ export const PublicPortal: React.FC = () => {
         );
     }
 
-    const { client, branding, projects, invoices, files } = data;
+    const { client, branding, cardNumber, projects, invoices, files } = data;
     const headerColor = branding?.brandColor || client.color;
     const headerTitle = branding?.companyName || client.company;
     const logoUrl = branding?.logoUrl || null;
@@ -140,6 +140,17 @@ export const PublicPortal: React.FC = () => {
                                 );
                             })}
                         </>
+                    )}
+
+                    {cardNumber && invoices.length > 0 && (
+                        <div className={styles.card} style={{ borderLeft: `4px solid ${headerColor}`, padding: 16, marginTop: 12 }}>
+                            <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 8 }}>
+                                💳 {t.cardForPayment}
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '1px', fontFamily: 'monospace' }}>
+                                {cardNumber}
+                            </div>
+                        </div>
                     )}
 
                     {files.length > 0 && (

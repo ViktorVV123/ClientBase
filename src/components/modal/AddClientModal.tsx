@@ -18,7 +18,7 @@ interface ClientModalProps {
     client?: Client | null;
     onClose: () => void;
     onAdd: (client: Client, enableNotifications: boolean) => void;
-    onUpdate?: (clientId: number, data: { name: string; company: string; email: string; color: string; avatar: string }) => void;
+    onUpdate?: (clientId: number, data: { name: string; company: string; email: string; color: string; avatar: string; show_card_in_portal?: boolean }) => void;
     onDelete?: (clientId: number) => void;
     isPro?: boolean;
     onUpgrade?: () => void;
@@ -32,6 +32,7 @@ export const AddClientModal: React.FC<ClientModalProps> = ({ client, onClose, on
     const [company, setCompany] = useState(client?.company || '');
     const [email, setEmail] = useState(client?.email || '');
     const [color, setColor] = useState(client?.color || AVATAR_COLORS[0]);
+    const [showCard, setShowCard] = useState(client?.showCardInPortal ?? false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [enableNotifications, setEnableNotifications] = useState(true);
 
@@ -39,9 +40,9 @@ export const AddClientModal: React.FC<ClientModalProps> = ({ client, onClose, on
         if (!name.trim()) return;
         const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
         if (isEdit && onUpdate && client) {
-            onUpdate(client.id, { name, company: company || t.noCompany, email: email || '', color, avatar: initials });
+            onUpdate(client.id, { name, company: company || t.noCompany, email: email || '', color, avatar: initials, show_card_in_portal: showCard });
         } else {
-            onAdd({ id: Date.now(), name, company: company || t.noCompany, email: email || '', avatar: initials, color, projects: [], invoices: [], files: [] }, enableNotifications);
+            onAdd({ id: Date.now(), name, company: company || t.noCompany, email: email || '', avatar: initials, color, showCardInPortal: showCard, projects: [], invoices: [], files: [] }, enableNotifications);
         }
         onClose();
     };
@@ -68,6 +69,11 @@ export const AddClientModal: React.FC<ClientModalProps> = ({ client, onClose, on
                         <span className={styles.notifyLabel}>📧 {t.enableNotifications}</span>
                     </label>
                 )}
+
+                <label className={styles.notifyToggle}>
+                    <input type="checkbox" checked={showCard} onChange={(e) => setShowCard(e.target.checked)} />
+                    <span className={styles.notifyLabel}>💳 {t.showCardInPortal}</span>
+                </label>
 
                 <label className={styles.label}>{t.color}</label>
                 <div className={styles.colorPicker}>

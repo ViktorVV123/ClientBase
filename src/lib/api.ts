@@ -42,6 +42,7 @@ export const fetchClients = async (): Promise<Client[]> => {
         email: c.email || '',
         avatar: c.avatar || c.name.slice(0, 2).toUpperCase(),
         color: c.color || '#6366f1',
+        showCardInPortal: c.show_card_in_portal || false,
         projects: (projectsByClient[c.id] || []).map(mapProject),
         invoices: (invoicesByClient[c.id] || []).map(mapInvoice),
         files: (filesByClient[c.id] || []).map(mapFile),
@@ -92,7 +93,7 @@ export const deleteClient = async (clientId: number): Promise<void> => {
 
 export const updateClient = async (
     clientId: number,
-    data: { name?: string; company?: string; email?: string; avatar?: string; color?: string }
+    data: { name?: string; company?: string; email?: string; avatar?: string; color?: string; show_card_in_portal?: boolean }
 ): Promise<void> => {
     const { error } = await supabase.from('clients').update(data).eq('id', clientId);
     if (error) throw error;
@@ -356,6 +357,7 @@ export const updateProfile = async (data: {
     bank_account?: string;
     bank_bik?: string;
     corr_account?: string;
+    card_number?: string;
     currency?: string;
     default_rate?: number | null;
     locale?: string;
@@ -470,13 +472,13 @@ export const fetchPortalData = async (token: string) => {
     const clientId = portalToken.client_id;
     const userId = portalToken.user_id;
 
-    // Загружаем все данные + branding из profiles
+    // Загружаем все данные + branding + card из profiles
     const [clientRes, projectsRes, invoicesRes, filesRes, profileRes] = await Promise.all([
         supabase.from('clients').select('*').eq('id', clientId).single(),
         supabase.from('projects').select('*').eq('client_id', clientId).order('created_at'),
         supabase.from('invoices').select('*').eq('client_id', clientId).order('created_at'),
         supabase.from('files').select('*').eq('client_id', clientId).order('created_at'),
-        supabase.from('profiles').select('company_name, brand_color, logo_url').eq('id', userId).single(),
+        supabase.from('profiles').select('company_name, brand_color, logo_url, card_number').eq('id', userId).single(),
     ]);
 
     if (clientRes.error || !clientRes.data) return null;
@@ -494,18 +496,21 @@ export const fetchPortalData = async (token: string) => {
 
     const isPro = sub?.plan === 'pro';
 
+    // Карта показывается если клиент разрешил + номер задан
+    const showCard = c.show_card_in_portal && profile?.card_number;
+
     return {
         client: {
             name: c.name,
             company: c.company || '',
             color: c.color || '#6366f1',
         },
-        // Branding доступен только для Pro
         branding: isPro && profile ? {
             companyName: profile.company_name || null,
             brandColor: profile.brand_color || null,
             logoUrl: profile.logo_url || null,
         } : null,
+        cardNumber: showCard ? profile.card_number : null,
         projects: (projectsRes.data || []).map(mapProject),
         invoices: (invoicesRes.data || []).map(mapInvoice),
         files: (filesRes.data || []).map(mapFile),

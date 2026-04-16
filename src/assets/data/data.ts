@@ -58,6 +58,7 @@ export interface Client {
     email: string;
     avatar: string;
     color: string;
+    showCardInPortal?: boolean;
     projects: Project[];
     invoices: Invoice[];
     files: ClientFile[];

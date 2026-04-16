@@ -20,6 +20,7 @@ interface ProfileData {
     bank_account: string;
     bank_bik: string;
     corr_account: string;
+    card_number: string;
     currency: string;
     default_rate: number | null;
     locale: string;
@@ -34,6 +35,7 @@ const EMPTY_PROFILE: ProfileData = {
     bank_account: '',
     bank_bik: '',
     corr_account: '',
+    card_number: '',
     currency: '₽',
     default_rate: null,
     locale: 'ru',
@@ -69,6 +71,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
                     bank_account: data.bank_account || '',
                     bank_bik: data.bank_bik || '',
                     corr_account: data.corr_account || '',
+                    card_number: data.card_number || '',
                     currency: data.currency || '₽',
                     default_rate: data.default_rate ?? null,
                     locale: data.locale || 'ru',
@@ -202,9 +205,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ userEmail, plan, onU
                                 <input className={styles.input} value={profile.corr_account} onChange={(e) => update('corr_account', e.target.value)} />
                             </div>
                         </div>
+                        <div className={styles.field}>
+                            <label className={styles.label}>💳 {t.cardNumber}</label>
+                            <input className={styles.input} value={profile.card_number} onChange={(e) => update('card_number', e.target.value)} placeholder={t.cardNumberPlaceholder} />
+                            <span className={styles.hint}>{t.cardNumberHint}</span>
+                        </div>
                         <span className={styles.hint}>{t.billingHint}</span>
                         <div className={styles.actions}>
-                            <button className={styles.saveBtn} disabled={saving === 'billing'} onClick={() => handleSave('billing', { business_name: profile.business_name, inn: profile.inn, bank_name: profile.bank_name, bank_account: profile.bank_account, bank_bik: profile.bank_bik, corr_account: profile.corr_account })}>{saveBtn('billing')}</button>
+                            <button className={styles.saveBtn} disabled={saving === 'billing'} onClick={() => handleSave('billing', { business_name: profile.business_name, inn: profile.inn, bank_name: profile.bank_name, bank_account: profile.bank_account, bank_bik: profile.bank_bik, corr_account: profile.corr_account, card_number: profile.card_number })}>{saveBtn('billing')}</button>
                             {saved === 'billing' && <span className={styles.savedMsg}>{t.saved}</span>}
                         </div>
                     </div>

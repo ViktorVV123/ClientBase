@@ -13,17 +13,19 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
 
     const [branding, setBranding] = useState<{ companyName: string | null; brandColor: string | null; logoUrl: string | null } | null>(null);
     const [notes, setNotes] = useState<ProjectNote[]>([]);
+    const [cardNumber, setCardNumber] = useState<string | null>(null);
 
     useEffect(() => {
-        if (isPro) {
-            fetchProfile().then((profile) => {
-                if (profile) setBranding({ companyName: profile.company_name || null, brandColor: profile.brand_color || null, logoUrl: profile.logo_url || null });
-            }).catch(() => {});
-        }
+        fetchProfile().then((profile) => {
+            if (profile) {
+                if (isPro) setBranding({ companyName: profile.company_name || null, brandColor: profile.brand_color || null, logoUrl: profile.logo_url || null });
+                if (client.showCardInPortal && profile.card_number) setCardNumber(profile.card_number);
+            }
+        }).catch(() => {});
         if (client.projects.length > 0) {
             fetchPortalNotes(client.projects.map((p) => p.id)).then(setNotes).catch(() => {});
         }
-    }, [isPro, client.id]);
+    }, [isPro, client.id, client.showCardInPortal]);
 
     const headerColor = (isPro && branding?.brandColor) || client.color;
     const headerTitle = (isPro && branding?.companyName) || client.company;
@@ -102,6 +104,17 @@ export const PortalPreview: React.FC<PortalPreviewProps> = ({ client, onClose, i
                                     );
                                 })}
                             </>
+                        )}
+
+                        {cardNumber && client.invoices.length > 0 && (
+                            <div className={styles.card} style={{ borderLeft: `4px solid ${headerColor}`, padding: 16, marginTop: 12 }}>
+                                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 8 }}>
+                                    💳 {t.cardForPayment}
+                                </div>
+                                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '1px', fontFamily: 'monospace' }}>
+                                    {cardNumber}
+                                </div>
+                            </div>
                         )}
 
                         {client.files.length > 0 && (

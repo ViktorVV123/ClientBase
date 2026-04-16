@@ -179,17 +179,25 @@ const AppContent: React.FC = () => {
 
     const handleUpdateClient = async (
         clientId: number,
-        data: { name: string; company: string; email: string; color: string; avatar: string }
+        data: { name: string; company: string; email: string; color: string; avatar: string; show_card_in_portal?: boolean }
     ) => {
         try {
             await updateClientApi(clientId, data);
+            const mapped = {
+                name: data.name,
+                company: data.company,
+                email: data.email,
+                color: data.color,
+                avatar: data.avatar,
+                showCardInPortal: data.show_card_in_portal,
+            };
             setClients((prev) =>
                 prev.map((c) =>
-                    c.id === clientId ? { ...c, ...data } : c
+                    c.id === clientId ? { ...c, ...mapped } : c
                 )
             );
             if (selectedClient?.id === clientId) {
-                setSelectedClient((prev) => (prev ? { ...prev, ...data } : prev));
+                setSelectedClient((prev) => (prev ? { ...prev, ...mapped } : prev));
             }
         } catch (err) {
             console.error('Failed to update client:', err);
